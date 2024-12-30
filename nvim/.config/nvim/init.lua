@@ -1,9 +1,13 @@
+-- Set leader key to space (We can call "Space" plus Regular Key for new Mapping meaning
+vim.g.mapleader = " "
+
 require('packer').startup(function()
     -- PLUGIN manager
     use 'wbthomason/packer.nvim'
 
     -- The Fuzzy Finder and its Dependency
     use 'nvim-lua/plenary.nvim'                 -- required by telescope, gitsigns etc
+    use 'nvim-telescope/telescope-ui-select.nvim' -- required by telescope for CodeActions
     use 'nvim-telescope/telescope.nvim'  		-- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
 
     -- LSP and Completion
@@ -11,6 +15,24 @@ require('packer').startup(function()
     use 'neovim/nvim-lspconfig'  			    -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
     use 'williamboman/mason.nvim'               -- LSP package manager
     use 'williamboman/mason-lspconfig.nvim'     -- Mason LSP config bridge
+
+
+    -- Code Actions
+    use {
+        'aznhe21/actions-preview.nvim',
+        config = function()
+            require("actions-preview").setup({
+                backend = { "telescope" },
+                -- new diagnostic API
+                telescope = {
+                    sorting_strategy = "ascending",
+                    layout_strategy = "vertical",
+                    layout_config = { height = 0.5, width = 0.8 }
+                }
+            })
+            vim.keymap.set({ "n", "v" }, "<leader>ca", require("actions-preview").code_actions)
+        end
+    }
 
     -- Completion Engine and Sources
     use 'hrsh7th/nvim-cmp'                      -- Completion Plugin
@@ -35,6 +57,19 @@ end)
 
 require('onedark').setup()
 vim.cmd[[colorscheme onedark]]
+
+-- LSP Setup
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+-- Common on_attach function
+local on_attach = function(client, bufnr)
+    -- LSP keymaps
+    local opts = { buffer = bufnr }
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+end
 
 -- Install the LSP's
 require("mason").setup()
@@ -62,23 +97,17 @@ cmp.setup({
         { name = 'buffer' },
     })
 })
--- Remove previous setup and use this minimal version
--- require'lspconfig'.clangd.setup{}
--- require'lspconfig'.clangd.setup{
---    cmd = {"clangd"},
---    filetypes = {"c", "cpp", "objc", "objcpp"},
---    root_dir = function() return vim.loop.cwd() end,
---    on_attach = function(client, bufnr)
---        -- Enable completion triggered by <c-x><c-o>
---        vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
---    end,
--- }
+
 require'lspconfig'.clangd.setup{
     cmd = { "clangd" },
     filetypes = { "c", "cpp", "objc", "objcpp" },
+    on_attach = on_attach,
+    capabilities = require('cmp_nvim_lsp').default_capabilities(),  -- for Code Actions
     on_attach = function(client, bufnr)
-        vim.notify("LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
-        -- Enable completion triggered by <c-x><c-o>
+        -- Call common setup
+        on_attach(client, bufnr)
+        -- Clangd specific setup
+        vim.notify("Clangd LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     end,
     flags = {
@@ -88,14 +117,18 @@ require'lspconfig'.clangd.setup{
 
 require'lspconfig'.svelte.setup{
     filetypes = { "svelte", "css", "js", "ts" },
+    on_attach = on_attach,
     capabilities = require('cmp_nvim_lsp').default_capabilities(),
     on_attach = function(client, bufnr)
-        vim.notify("Svelte LSP started")
+        -- Call common setup
+        on_attach(client, bufnr)
+        vim.notify("Svelte LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
     end
 }
 
 require'lspconfig'.marksman.setup{
     capabilities = require('cmp_nvim_lsp').default_capabilities(),
+    on_attach = on_attach,
 }
 --
 --
@@ -109,6 +142,11 @@ require'nvim-treesitter.configs'.setup {
 }
 
 require('telescope').setup{
+    extensions = {
+        ['ui-select'] = {
+            require('telescope.themes').get_dropdown()
+        }
+    },
     defaults = {
         mappings = {
             i = {
@@ -127,9 +165,79 @@ require('telescope').setup{
         }
     }
 }
+require('telescope').load_extension('ui-select')
 
 require('nvim-web-devicons').setup()
 require('nvim-tree').setup()
+
+----------------------
+-- function for autogenerating a Makefile from the current dir in nvim-tree
+----------------------
+local function create_makefile_template()
+    -- Get selected node from NvimTree
+    local node = require('nvim-tree.api').tree.get_node_under_cursor()
+    if not node then return end
+    
+    -- Get the directory path (if file is selected, use its parent)
+    local path = node.type == 'directory' and node.absolute_path or vim.fn.fnamemodify(node.absolute_path, ':h')
+    
+    -- Find all cpp files recursively
+    local cpp_files = vim.fn.glob(path .. "/**/*.cpp", false, true)
+    local sources = {}
+    for i, file in ipairs(cpp_files) do
+        sources[i] = file:gsub(path .. "/", "")
+    end
+    
+    local makefile = [[
+CXX = g++
+CXXFLAGS = -Wall -Wextra -std=c++17
+INCLUDES = -I./include
+TARGET = main
+
+# Source files
+SRCS = ]] .. table.concat(sources, " \\\n\t") .. [[
+
+# Object files
+OBJS = $(SRCS:.cpp=.o)
+
+# Main target
+$(TARGET): $(OBJS)
+    $(CXX) $(OBJS) -o $(TARGET)
+
+# Compile source files
+%.o: %.cpp
+    $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# Create include directory if it doesn't exist
+create_dirs:
+    @mkdir -p include
+
+# Clean build files
+clean:
+    rm -f $(OBJS) $(TARGET)
+
+.PHONY: clean create_dirs
+]]
+
+    -- Create include directory
+    vim.fn.mkdir("include", "p")
+    
+    -- Write Makefile
+    local file = io.open(path .. "/Makefile", "w")
+    file:write(makefile)
+    file:close()
+end
+
+-- Add to NvimTree keymaps
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "NvimTree",
+    callback = function()
+        vim.keymap.set('n', '<leader>gm', create_makefile_template, {buffer=true, desc="Create Makefile"})
+    end
+})
+----------------------
+-- END OF Makefile-Generator
+----------------------
 
 on_attach = function(client, bufnr)
     -- Force TreeSitter to re-highlight after changes, otherwise the highlighting breaks on fixes like automimport
@@ -145,9 +253,6 @@ end
 --  Remaps
 -----------------------
 
--- Set leader key to space (We can call "Space" plus Regular Key for new Mapping meaning
-vim.g.mapleader = " "
-
 -- LSP mappings that don't override defaults
 vim.keymap.set('i', '<C-Space>', vim.lsp.omnifunc)		        -- Our Autocomplete
 vim.keymap.set('n', '<leader>k', vim.lsp.buf.hover)      	    -- hover info (Use "Space" as K opens manpage)
@@ -158,7 +263,7 @@ vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
--- Tree-Setup and Shortcur
+-- Tree-Setup and Shortcut
 require('nvim-tree').setup()
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
 
@@ -166,14 +271,14 @@ vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
 vim.keymap.set('n', '<leader>gg', ':LazyGit<CR>', { silent = true })
 
 -- Auto-import via code action - 
-vim.keymap.set('n', '<leader>ca', function()
-    vim.lsp.buf.code_action()
+-- vim.keymap.set('n', '<leader>ca', function()
+--     vim.lsp.buf.code_action()
     -- Small delay to let the action complete
-    vim.defer_fn(function()
-        vim.cmd("TSBufEnable highlight")
-        vim.cmd("e")
-    end, 100)
-end, { desc = 'Code actions with highlight refresh' })
+    -- vim.defer_fn(function()
+    --     vim.cmd("TSBufEnable highlight")
+    --     vim.cmd("e")
+    -- end, 100)
+-- end, { desc = 'Code actions with highlight refresh' })
 
 -- Remap C-c to Esc to use multiline insert in VMode
 vim.keymap.set('i', '<C-c>', '<Esc>')
@@ -191,6 +296,11 @@ vim.keymap.set('n', 'K', function()
     vim.cmd('Man')
 end)
 
+-- Better keymaps for LSP navigation
+vim.keymap.set('n', 'gd', ':Telescope lsp_definitions<CR>')
+vim.keymap.set('n', 'gr', ':Telescope lsp_references<CR>')
+vim.keymap.set('n', 'gi', ':Telescope lsp_implementations<CR>')
+vim.keymap.set('n', '<leader>s', ':Telescope lsp_document_symbols<CR>')
 
 -- vim.keymap.set('n', 'K', function()
 --     if vim.bo.filetype == 'cpp' or vim.bo.filetype == 'c' then
