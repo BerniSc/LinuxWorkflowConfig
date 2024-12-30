@@ -53,6 +53,9 @@ require('packer').startup(function()
 
     -- Theme
     use 'navarasu/onedark.nvim'
+
+    -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
+    use {'stevearc/dressing.nvim'}
 end)
 
 require('onedark').setup()
