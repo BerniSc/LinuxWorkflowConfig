@@ -211,6 +211,9 @@ $(TARGET): $(OBJS)
 %.o: %.cpp
     $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
+run:
+    ./$(TARGET)
+
 # Create include directory if it doesn't exist
 create_dirs:
     @mkdir -p include
@@ -219,7 +222,7 @@ create_dirs:
 clean:
     rm -f $(OBJS) $(TARGET)
 
-.PHONY: clean create_dirs
+.PHONY: clean create_dirs run
 ]]
 
     -- Create include directory
