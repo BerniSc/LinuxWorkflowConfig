@@ -34,6 +34,7 @@ require('packer').startup(function()
         end
     }
 
+
     -- Completion Engine and Sources
     use 'hrsh7th/nvim-cmp'                      -- Completion Plugin
     use 'hrsh7th/cmp-nvim-lsp'                  -- LSP-Completion
@@ -54,6 +55,12 @@ require('packer').startup(function()
     -- Theme
     use 'navarasu/onedark.nvim'
 
+    -- Banner to display f.E. current Gitbranch
+    use {
+        'nvim-lualine/lualine.nvim',
+        requires = { 'nvim-tree/nvim-web-devicons' }
+    }
+
     -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
     use {'stevearc/dressing.nvim'}
 end)
@@ -63,6 +70,63 @@ vim.cmd[[colorscheme onedark]]
 
 -- LSP Setup
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+-- Wrap the Diagnosit Messages like Errormessages and warning so they Fit
+-- Configure diagnostic display
+vim.diagnostic.config({
+    float = {
+        max_width = 80,         -- Maximum width of floating window
+        max_height = 20,        -- Maximum height of floating window
+        border = "rounded",
+    },
+    virtual_text = {
+        prefix = '●',
+        source = "if_many",
+        spacing = 4,
+        severity_sort = true,
+    },
+    severity_sort = true,
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+})
+-- Nicer UI for diagnostics float on <LEADER>w
+vim.keymap.set('n', '<leader>w', function()
+    vim.diagnostic.open_float({ scope = 'line' })
+end)
+
+-- Setup the Banner to display relevant Stuff under the Editor
+require('lualine').setup {
+    options = {
+        theme = 'auto',
+        component_separators = '|',
+        section_separators = '',
+        -- Disable for NvimTree and other file types that dont require it
+        disabled_filetypes = {
+            'NvimTree',
+            'packer',
+            'help'
+        },
+        -- We could set this if we just want one Status, for now leave it of and see how much it bothers
+        globalstatus = false,
+        -- Only display if it fits...
+        cond = function()
+            return vim.o.columns > 50
+        end
+    },
+    sections = {
+        lualine_a = {'mode'},
+        lualine_b = {
+            {'branch'},
+            {'diff'},
+        },
+        lualine_c = {{'filename', path = 1}},
+        lualine_x = {'encoding', 'fileformat', 'filetype'},
+        lualine_y = {'progress'},
+        lualine_z = {'location'}
+    }
+}
+
 
 -- Common on_attach function
 local on_attach = function(client, bufnr)
@@ -228,6 +292,9 @@ clean:
     -- Create include directory
     vim.fn.mkdir("include", "p")
     
+    -- Replace leading spaces with tabs
+    makefile = makefile:gsub("\n    ", "\n\t")
+
     -- Write Makefile
     local file = io.open(path .. "/Makefile", "w")
     file:write(makefile)
