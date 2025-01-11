@@ -16,6 +16,9 @@ require('packer').startup(function()
     use 'williamboman/mason.nvim'               -- LSP package manager
     use 'williamboman/mason-lspconfig.nvim'     -- Mason LSP config bridge
 
+    -- For TMux Integration (switch using <C-h> etc...)
+    use 'christoomey/vim-tmux-navigator'     
+
 
     -- Code Actions
     use {
