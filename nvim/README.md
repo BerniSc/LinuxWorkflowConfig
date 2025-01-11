@@ -28,6 +28,12 @@ tar xf lazygit.tar.gz lazygit
 sudo install lazygit /usr/local/bin
 ```
 
+Nerdfont for cooler Display of all characters:
+```
+JetBrainsMono NFP Regular
+    -- JetBrainsMono Nerd Font Propo --
+```
+
 # Use config
 ```
 cp .config/nvim ~/.config
