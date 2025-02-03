@@ -19,6 +19,18 @@ require('packer').startup(function()
     -- For TMux Integration (switch using <C-h> etc...)
     use 'christoomey/vim-tmux-navigator'     
 
+    -- Reaplace/Rename
+    use {
+        'gbprod/substitute.nvim',
+        config = function()
+            require("substitute").setup({
+                highlight_substituted_text = {
+                    enabled = true,
+                    timer = 5,
+                }
+            })
+        end
+    }
 
     -- Code Actions
     use {
@@ -139,9 +151,12 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    return vim.fn.getcwd()
 end
 
 -- Install the LSP's
+local root_pattern = require('lspconfig.util').root_pattern
+
 require("mason").setup()
 require("mason-lspconfig").setup({
     ensure_installed = { 
@@ -171,7 +186,6 @@ cmp.setup({
 require'lspconfig'.clangd.setup{
     cmd = { "clangd" },
     filetypes = { "c", "cpp", "objc", "objcpp" },
-    on_attach = on_attach,
     capabilities = require('cmp_nvim_lsp').default_capabilities(),  -- for Code Actions
     on_attach = function(client, bufnr)
         -- Call common setup
@@ -180,6 +194,19 @@ require'lspconfig'.clangd.setup{
         vim.notify("Clangd LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     end,
+    root_dir = function(fname)
+        -- Check each marker individually
+        local markers = { 'compile_commands.json', 'compile_flags.txt', '.clangd', 'CMakeLists.txt', 'Makefile', '.git' }
+        for _, marker in ipairs(markers) do
+            local root = root_pattern(marker)(fname)
+            if root then
+                print("Found root via", marker, ":", root)
+                return root
+            end
+        end
+        print("No markers found, using cwd:", vim.fn.getcwd())
+        return vim.fn.getcwd()
+    end,
     flags = {
         debounce_text_changes = 150,
     }
@@ -187,12 +214,24 @@ require'lspconfig'.clangd.setup{
 
 require'lspconfig'.svelte.setup{
     filetypes = { "svelte", "css", "js", "ts" },
-    on_attach = on_attach,
     capabilities = require('cmp_nvim_lsp').default_capabilities(),
     on_attach = function(client, bufnr)
         -- Call common setup
         on_attach(client, bufnr)
         vim.notify("Svelte LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
+    end,
+    root_dir = function(fname)
+        -- Check each marker individually
+        local markers = {'package.json', 'svelte.config.js', '.git'}
+        for _, marker in ipairs(markers) do
+            local root = root_pattern(marker)(fname)
+            if root then
+                print("Found root via", marker, ":", root)
+                return root
+            end
+        end
+        print("No markers found, using cwd:", vim.fn.getcwd())
+        return vim.fn.getcwd()
     end
 }
 
@@ -272,7 +311,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 # Main target
 $(TARGET): $(OBJS)
-    $(CXX) $(OBJS) -o $(TARGET)
+\\t$(CXX) $(OBJS) -o $(TARGET)
 
 # Compile source files
 %.o: %.cpp
@@ -377,6 +416,32 @@ vim.keymap.set('n', 'gd', ':Telescope lsp_definitions<CR>')
 vim.keymap.set('n', 'gr', ':Telescope lsp_references<CR>')
 vim.keymap.set('n', 'gi', ':Telescope lsp_implementations<CR>')
 vim.keymap.set('n', '<leader>s', ':Telescope lsp_document_symbols<CR>')
+
+-- LSP smart rename
+vim.keymap.set("n", "S", vim.lsp.buf.rename, { noremap = true, desc = "Smart rename (LSP)" })
+
+-- Fast replace without confirm
+vim.keymap.set("n", "sw", require('substitute.range').word, { 
+    noremap = true, desc = "Replace word (all instances)" 
+})
+vim.keymap.set("n", "s", require('substitute.range').operator, { 
+    noremap = true, desc = "Replace in motion" 
+})
+vim.keymap.set("x", "s", require('substitute.range').visual, { 
+    noremap = true, desc = "Replace in visual" 
+})
+
+-- With confirmation (using leader)
+vim.keymap.set("n", "<leader>s", function()
+    require('substitute.range').operator({ confirm = true })
+end, { 
+    noremap = true, desc = "Replace in motion (confirm)" 
+})
+vim.keymap.set("n", "<leader>ss", function()
+    require('substitute.range').word({ confirm = true })
+end, { 
+    noremap = true, desc = "Replace word (confirm)" 
+})
 
 -- vim.keymap.set('n', 'K', function()
 --     if vim.bo.filetype == 'cpp' or vim.bo.filetype == 'c' then
