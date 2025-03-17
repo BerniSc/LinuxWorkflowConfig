@@ -24,6 +24,7 @@ set -ag terminal-overrides ",xterm-256color:RGB"
 
 # Force bash to use colors
 set-option -g default-command "TERM=xterm-256color bash"
+set -g terminal-features ",xterm-256color:RGB"
 
 # Mouse support
 set -g mouse on
@@ -31,6 +32,16 @@ set -g mouse on
 # Fix tab completion
 set-window-option -g xterm-keys on
 bind-key -n Tab send-key Tab
+set -g allow-passthrough on         # Let terminal handle some keys
+
+# Prevent accidental window creation - Seemed to be a large problem for me... ^^
+unbind C-c
+
+# Set Mousebehaviour to be more like in the regular Terminal
+set -g terminal-overrides '*:smcup@:rmcup@'
+
+# Dont exit copy mode on mouse release
+unbind -T copy-mode-vi MouseDragEnd1Pane
 
 # SET THE STYLE/THEME
 # Separators for rounded look
