@@ -54,6 +54,9 @@ require('packer').startup(function()
     use 'hrsh7th/nvim-cmp'                      -- Completion Plugin
     use 'hrsh7th/cmp-nvim-lsp'                  -- LSP-Completion
     use 'hrsh7th/cmp-buffer'                    -- Buffer-Completion
+    use 'hrsh7th/cmp-cmdline'                   -- Cmdline-Completions
+    use 'L3MON4D3/LuaSnip'                      -- snippet engine
+    use 'saadparwaiz1/cmp_luasnip'              -- snippet completions
 
     -- File-Tree and Icons
     use 'nvim-tree/nvim-web-devicons'
@@ -82,9 +85,6 @@ end)
 
 require('onedark').setup()
 vim.cmd[[colorscheme onedark]]
-
--- LSP Setup
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 -- Wrap the Diagnosit Messages like Errormessages and warning so they Fit
 -- Configure diagnostic display
@@ -143,6 +143,8 @@ require('lualine').setup {
 }
 
 
+-- LSP Setup
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 -- Common on_attach function
 local on_attach = function(client, bufnr)
     -- LSP keymaps
@@ -151,12 +153,20 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    return vim.fn.getcwd()
+    
+    -- Force TreeSitter to re-highlight after changes, otherwise the highlighting breaks on fixes like automimport
+    vim.api.nvim_create_autocmd("BufWritePost", {
+        buffer = bufnr,
+        callback = function()
+            vim.cmd("TSBufEnable highlight")
+        end,
+    })
+
+    -- Notify on attach
+    vim.notify("LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
 end
 
 -- Install the LSP's
-local root_pattern = require('lspconfig.util').root_pattern
-
 require("mason").setup()
 require("mason-lspconfig").setup({
     ensure_installed = { 
@@ -164,11 +174,80 @@ require("mason-lspconfig").setup({
         "marksman", 
         "clangd",
     },
-    automatic_installation = true
+    automatic_installation = true,
+})
+
+require("mason-lspconfig").setup_handlers({
+    -- Default handler
+    function(server_name)
+        require("lspconfig")[server_name].setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+            root_dir = function(fname)
+                return require('lspconfig.util').root_pattern(
+                    -- Common root Pattern
+                    '.git',
+                    'package.json',
+                    'Makefile',
+                    'CMakeLists.txt'
+                )(fname) or vim.fn.getcwd()
+            end
+        })
+    end,
+    
+    -- Special configs for specific LSPs 
+    ["clangd"] = function()
+        require("lspconfig").clangd.setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+            root_dir = function(fname)
+                return require('lspconfig.util').root_pattern(
+                    'compile_commands.json',
+                    'compile_flags.txt',
+                    '.clangd',
+                    'CMakeLists.txt',
+                    'Makefile',
+                    '.git'
+                )(fname) or vim.fn.getcwd()
+            end,
+            cmd = { 
+                "clangd",
+                "--background-index",
+                "--clang-tidy",
+                "--header-insertion=iwyu",
+                "--completion-style=detailed",
+                "--function-arg-placeholders"
+            }
+        })
+    end,
+
+    ["svelte"] = function()
+        require("lspconfig").svelte.setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+            filetypes = { "svelte", "css", "js", "ts" },
+            root_dir = require('lspconfig.util').root_pattern('package.json', 'svelte.config.js', '.git')
+        })
+    end
 })
 
 local cmp = require('cmp')
 cmp.setup({
+    -- window = {
+    --     documentation = {
+    --         border = "rounded",
+    --         winhighlight = "NormalFloat:Pmenu,NormalFloat:Pmenu,CursorLine:PmenuSel,Search:None",
+    --     },
+    --     completion = {
+    --         border = "rounded",
+    --         winhighlight = "NormalFloat:Pmenu,NormalFloat:Pmenu,CursorLine:PmenuSel,Search:None",
+    --     },
+    -- },
+    snippet = {                     -- Add snippet configuration
+        expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+        end,
+    },
     mapping = cmp.mapping.preset.insert({
         ['<C-Space>'] = cmp.mapping.complete(),
         ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Enter to confirm
@@ -179,68 +258,11 @@ cmp.setup({
     }),
     sources = cmp.config.sources({
         { name = 'nvim_lsp' },
+        { name = 'luasnip' },
         { name = 'buffer' },
     })
 })
-
-require'lspconfig'.clangd.setup{
-    cmd = { "clangd" },
-    filetypes = { "c", "cpp", "objc", "objcpp" },
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),  -- for Code Actions
-    on_attach = function(client, bufnr)
-        -- Call common setup
-        on_attach(client, bufnr)
-        -- Clangd specific setup
-        vim.notify("Clangd LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
-        vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-    end,
-    root_dir = function(fname)
-        -- Check each marker individually
-        local markers = { 'compile_commands.json', 'compile_flags.txt', '.clangd', 'CMakeLists.txt', 'Makefile', '.git' }
-        for _, marker in ipairs(markers) do
-            local root = root_pattern(marker)(fname)
-            if root then
-                print("Found root via", marker, ":", root)
-                return root
-            end
-        end
-        print("No markers found, using cwd:", vim.fn.getcwd())
-        return vim.fn.getcwd()
-    end,
-    flags = {
-        debounce_text_changes = 150,
-    }
-}
-
-require'lspconfig'.svelte.setup{
-    filetypes = { "svelte", "css", "js", "ts" },
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
-    on_attach = function(client, bufnr)
-        -- Call common setup
-        on_attach(client, bufnr)
-        vim.notify("Svelte LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
-    end,
-    root_dir = function(fname)
-        -- Check each marker individually
-        local markers = {'package.json', 'svelte.config.js', '.git'}
-        for _, marker in ipairs(markers) do
-            local root = root_pattern(marker)(fname)
-            if root then
-                print("Found root via", marker, ":", root)
-                return root
-            end
-        end
-        print("No markers found, using cwd:", vim.fn.getcwd())
-        return vim.fn.getcwd()
-    end
-}
-
-require'lspconfig'.marksman.setup{
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
-    on_attach = on_attach,
-}
---
---
+require('luasnip.loaders.from_vscode').lazy_load()
 
 require'nvim-treesitter.configs'.setup {
     ensure_installed = { "c", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml" },
@@ -311,7 +333,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 # Main target
 $(TARGET): $(OBJS)
-\\t$(CXX) $(OBJS) -o $(TARGET)
+    $(CXX) $(OBJS) -o $(TARGET)
 
 # Compile source files
 %.o: %.cpp
@@ -354,16 +376,6 @@ vim.api.nvim_create_autocmd("FileType", {
 -- END OF Makefile-Generator
 ----------------------
 
-on_attach = function(client, bufnr)
-    -- Force TreeSitter to re-highlight after changes, otherwise the highlighting breaks on fixes like automimport
-    vim.api.nvim_create_autocmd("BufWritePost", {
-        buffer = bufnr,
-        callback = function()
-            vim.cmd("TSBufEnable highlight")
-        end,
-    })
-end
-
 -----------------------
 --  Remaps
 -----------------------
@@ -375,7 +387,7 @@ vim.keymap.set('n', '<leader>gd', vim.lsp.buf.definition) 	    -- go to definiti
 vim.keymap.set('n', '<leader>gr', vim.lsp.buf.references) 	    -- find references
 
 vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
-vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text
+vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
 -- Tree-Setup and Shortcut
