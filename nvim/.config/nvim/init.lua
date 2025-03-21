@@ -54,6 +54,10 @@ require('packer').startup(function()
     use 'hrsh7th/nvim-cmp'                      -- Completion Plugin
     use 'hrsh7th/cmp-nvim-lsp'                  -- LSP-Completion
     use 'hrsh7th/cmp-buffer'                    -- Buffer-Completion
+    use 'hrsh7th/cmp-cmdline'                   -- Cmdline-Completions
+    use 'L3MON4D3/LuaSnip'                      -- snippet engine
+    use 'saadparwaiz1/cmp_luasnip'              -- snippet completions
+    use 'rafamadriz/friendly-snippets'          -- template-sample-snippets for the different languages
 
     -- File-Tree and Icons
     use 'nvim-tree/nvim-web-devicons'
@@ -70,6 +74,23 @@ require('packer').startup(function()
     -- Theme
     use 'navarasu/onedark.nvim'
 
+    -- Highlighting of ToDo notes etc
+    use {
+        'folke/todo-comments.nvim',
+        requires = 'nvim-lua/plenary.nvim',
+        config = function()
+            require('todo-comments').setup{
+                highlight = {
+                    pattern = [[.*<(KEYWORDS)\s*]],
+                    multiline = true,
+                },
+                search = {
+                    pattern = [[\b(KEYWORDS)]],
+                }
+            }
+        end
+    }
+
     -- Banner to display f.E. current Gitbranch
     use {
         'nvim-lualine/lualine.nvim',
@@ -82,9 +103,6 @@ end)
 
 require('onedark').setup()
 vim.cmd[[colorscheme onedark]]
-
--- LSP Setup
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 -- Wrap the Diagnosit Messages like Errormessages and warning so they Fit
 -- Configure diagnostic display
@@ -143,6 +161,8 @@ require('lualine').setup {
 }
 
 
+-- LSP Setup
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 -- Common on_attach function
 local on_attach = function(client, bufnr)
     -- LSP keymaps
@@ -151,12 +171,20 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    return vim.fn.getcwd()
+    
+    -- Force TreeSitter to re-highlight after changes, otherwise the highlighting breaks on fixes like automimport
+    vim.api.nvim_create_autocmd("BufWritePost", {
+        buffer = bufnr,
+        callback = function()
+            vim.cmd("TSBufEnable highlight")
+        end,
+    })
+
+    -- Notify on attach
+    vim.notify("LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
 end
 
 -- Install the LSP's
-local root_pattern = require('lspconfig.util').root_pattern
-
 require("mason").setup()
 require("mason-lspconfig").setup({
     ensure_installed = { 
@@ -164,11 +192,87 @@ require("mason-lspconfig").setup({
         "marksman", 
         "clangd",
     },
-    automatic_installation = true
+    automatic_installation = true,
+})
+
+require("mason-lspconfig").setup_handlers({
+    -- Default handler
+    function(server_name)
+        require("lspconfig")[server_name].setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+            root_dir = function(fname)
+                return require('lspconfig.util').root_pattern(
+                    -- Common root Pattern
+                    '.git',
+                    'package.json',
+                    'Makefile',
+                    'CMakeLists.txt'
+                )(fname) or vim.fn.getcwd()
+            end
+        })
+    end,
+    
+    -- Special configs for specific LSPs 
+    ["clangd"] = function()
+        require("lspconfig").clangd.setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+            root_dir = function(fname)
+                return require('lspconfig.util').root_pattern(
+                    'compile_commands.json',
+                    'compile_flags.txt',
+                    '.clangd',
+                    'CMakeLists.txt',
+                    'Makefile',
+                    '.git'
+                )(fname) or vim.fn.getcwd()
+            end,
+            cmd = { 
+                "clangd",
+                "--background-index",
+                "--clang-tidy",
+                "--header-insertion=iwyu",
+                "--completion-style=detailed",
+                "--function-arg-placeholders"
+            }
+        })
+    end,
+
+    ["svelte"] = function()
+        require("lspconfig").svelte.setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+            filetypes = { "svelte", "css", "js", "ts" },
+            root_dir = require('lspconfig.util').root_pattern('package.json', 'svelte.config.js', '.git')
+        })
+    end,
+
+    ["pyright"] = function()
+        require("lspconfig").pyright.setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+        })
+    end
 })
 
 local cmp = require('cmp')
 cmp.setup({
+    -- window = {
+    --     documentation = {
+    --         border = "rounded",
+    --         winhighlight = "NormalFloat:Pmenu,NormalFloat:Pmenu,CursorLine:PmenuSel,Search:None",
+    --     },
+    --     completion = {
+    --         border = "rounded",
+    --         winhighlight = "NormalFloat:Pmenu,NormalFloat:Pmenu,CursorLine:PmenuSel,Search:None",
+    --     },
+    -- },
+    snippet = {                     -- Add snippet configuration
+        expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+        end,
+    },
     mapping = cmp.mapping.preset.insert({
         ['<C-Space>'] = cmp.mapping.complete(),
         ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Enter to confirm
@@ -177,73 +281,59 @@ cmp.setup({
         ['<C-n>'] = cmp.mapping.select_next_item(),        -- Ctrl+n alternative
         ['<C-p>'] = cmp.mapping.select_prev_item(),        -- Ctrl+p alternative
     }),
+    -- sources = cmp.config.sources({
+    --     { name = 'nvim_lsp' },
+    --     { name = 'luasnip' },
+    --     { name = 'buffer' },
+    -- }),
     sources = cmp.config.sources({
-        { name = 'nvim_lsp' },
-        { name = 'buffer' },
-    })
+        { name = 'nvim_lsp', priority = 1000 },
+        { name = 'luasnip', priority = 750 },
+        { name = 'buffer', priority = 500 },
+    }),
+    sorting = {
+        comparators = {
+            cmp.config.compare.offset,
+            cmp.config.compare.exact,
+            cmp.config.compare.score,
+            -- Prefer LuaSnip over LSP for snippets to avoid duplicates
+            function(entry1, entry2)
+                local source1 = entry1.source.name
+                local source2 = entry2.source.name
+                
+                -- If both entries have the same label and one is from luasnip and one from LSP
+                if entry1.completion_item.label == entry2.completion_item.label then
+                    if source1 == 'luasnip' and source2 == 'nvim_lsp' then
+                        return true
+                    end
+                    if source2 == 'luasnip' and source1 == 'nvim_lsp' then
+                        return false
+                    end
+                end
+                
+                return nil
+            end,
+            cmp.config.compare.kind,
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+        },
+    },
+    formatting = {
+        format = function(entry, vim_item)
+            vim_item.menu = ({
+                nvim_lsp = "[LSP]",
+                luasnip = "[Snippet]",
+                buffer = "[Buffer]",
+            })[entry.source.name]
+            return vim_item
+        end
+    },
 })
-
-require'lspconfig'.clangd.setup{
-    cmd = { "clangd" },
-    filetypes = { "c", "cpp", "objc", "objcpp" },
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),  -- for Code Actions
-    on_attach = function(client, bufnr)
-        -- Call common setup
-        on_attach(client, bufnr)
-        -- Clangd specific setup
-        vim.notify("Clangd LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
-        vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-    end,
-    root_dir = function(fname)
-        -- Check each marker individually
-        local markers = { 'compile_commands.json', 'compile_flags.txt', '.clangd', 'CMakeLists.txt', 'Makefile', '.git' }
-        for _, marker in ipairs(markers) do
-            local root = root_pattern(marker)(fname)
-            if root then
-                print("Found root via", marker, ":", root)
-                return root
-            end
-        end
-        print("No markers found, using cwd:", vim.fn.getcwd())
-        return vim.fn.getcwd()
-    end,
-    flags = {
-        debounce_text_changes = 150,
-    }
-}
-
-require'lspconfig'.svelte.setup{
-    filetypes = { "svelte", "css", "js", "ts" },
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
-    on_attach = function(client, bufnr)
-        -- Call common setup
-        on_attach(client, bufnr)
-        vim.notify("Svelte LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
-    end,
-    root_dir = function(fname)
-        -- Check each marker individually
-        local markers = {'package.json', 'svelte.config.js', '.git'}
-        for _, marker in ipairs(markers) do
-            local root = root_pattern(marker)(fname)
-            if root then
-                print("Found root via", marker, ":", root)
-                return root
-            end
-        end
-        print("No markers found, using cwd:", vim.fn.getcwd())
-        return vim.fn.getcwd()
-    end
-}
-
-require'lspconfig'.marksman.setup{
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
-    on_attach = on_attach,
-}
---
---
+require('luasnip.loaders.from_vscode').lazy_load()
 
 require'nvim-treesitter.configs'.setup {
-    ensure_installed = { "c", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml" },
+    ensure_installed = { "c", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
     highlight = {
         enable = true,
         force_enable = true,
@@ -311,7 +401,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 # Main target
 $(TARGET): $(OBJS)
-\\t$(CXX) $(OBJS) -o $(TARGET)
+    $(CXX) $(OBJS) -o $(TARGET)
 
 # Compile source files
 %.o: %.cpp
@@ -354,16 +444,6 @@ vim.api.nvim_create_autocmd("FileType", {
 -- END OF Makefile-Generator
 ----------------------
 
-on_attach = function(client, bufnr)
-    -- Force TreeSitter to re-highlight after changes, otherwise the highlighting breaks on fixes like automimport
-    vim.api.nvim_create_autocmd("BufWritePost", {
-        buffer = bufnr,
-        callback = function()
-            vim.cmd("TSBufEnable highlight")
-        end,
-    })
-end
-
 -----------------------
 --  Remaps
 -----------------------
@@ -375,7 +455,7 @@ vim.keymap.set('n', '<leader>gd', vim.lsp.buf.definition) 	    -- go to definiti
 vim.keymap.set('n', '<leader>gr', vim.lsp.buf.references) 	    -- find references
 
 vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
-vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text
+vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
 -- Tree-Setup and Shortcut
@@ -442,6 +522,11 @@ vim.keymap.set("n", "<leader>ss", function()
 end, { 
     noremap = true, desc = "Replace word (confirm)" 
 })
+
+-- Quick exit without save
+vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
+-- Quick save
+vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
 
 -- vim.keymap.set('n', 'K', function()
 --     if vim.bo.filetype == 'cpp' or vim.bo.filetype == 'c' then
