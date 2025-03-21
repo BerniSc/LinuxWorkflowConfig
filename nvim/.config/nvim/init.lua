@@ -57,6 +57,7 @@ require('packer').startup(function()
     use 'hrsh7th/cmp-cmdline'                   -- Cmdline-Completions
     use 'L3MON4D3/LuaSnip'                      -- snippet engine
     use 'saadparwaiz1/cmp_luasnip'              -- snippet completions
+    use 'rafamadriz/friendly-snippets'          -- template-sample-snippets for the different languages
 
     -- File-Tree and Icons
     use 'nvim-tree/nvim-web-devicons'
@@ -72,6 +73,23 @@ require('packer').startup(function()
 
     -- Theme
     use 'navarasu/onedark.nvim'
+
+    -- Highlighting of ToDo notes etc
+    use {
+        'folke/todo-comments.nvim',
+        requires = 'nvim-lua/plenary.nvim',
+        config = function()
+            require('todo-comments').setup{
+                highlight = {
+                    pattern = [[.*<(KEYWORDS)\s*]],
+                    multiline = true,
+                },
+                search = {
+                    pattern = [[\b(KEYWORDS)]],
+                }
+            }
+        end
+    }
 
     -- Banner to display f.E. current Gitbranch
     use {
@@ -228,6 +246,13 @@ require("mason-lspconfig").setup_handlers({
             filetypes = { "svelte", "css", "js", "ts" },
             root_dir = require('lspconfig.util').root_pattern('package.json', 'svelte.config.js', '.git')
         })
+    end,
+
+    ["pyright"] = function()
+        require("lspconfig").pyright.setup({
+            capabilities = capabilities,
+            on_attach = on_attach,
+        })
     end
 })
 
@@ -256,16 +281,59 @@ cmp.setup({
         ['<C-n>'] = cmp.mapping.select_next_item(),        -- Ctrl+n alternative
         ['<C-p>'] = cmp.mapping.select_prev_item(),        -- Ctrl+p alternative
     }),
+    -- sources = cmp.config.sources({
+    --     { name = 'nvim_lsp' },
+    --     { name = 'luasnip' },
+    --     { name = 'buffer' },
+    -- }),
     sources = cmp.config.sources({
-        { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        { name = 'buffer' },
-    })
+        { name = 'nvim_lsp', priority = 1000 },
+        { name = 'luasnip', priority = 750 },
+        { name = 'buffer', priority = 500 },
+    }),
+    sorting = {
+        comparators = {
+            cmp.config.compare.offset,
+            cmp.config.compare.exact,
+            cmp.config.compare.score,
+            -- Prefer LuaSnip over LSP for snippets to avoid duplicates
+            function(entry1, entry2)
+                local source1 = entry1.source.name
+                local source2 = entry2.source.name
+                
+                -- If both entries have the same label and one is from luasnip and one from LSP
+                if entry1.completion_item.label == entry2.completion_item.label then
+                    if source1 == 'luasnip' and source2 == 'nvim_lsp' then
+                        return true
+                    end
+                    if source2 == 'luasnip' and source1 == 'nvim_lsp' then
+                        return false
+                    end
+                end
+                
+                return nil
+            end,
+            cmp.config.compare.kind,
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+        },
+    },
+    formatting = {
+        format = function(entry, vim_item)
+            vim_item.menu = ({
+                nvim_lsp = "[LSP]",
+                luasnip = "[Snippet]",
+                buffer = "[Buffer]",
+            })[entry.source.name]
+            return vim_item
+        end
+    },
 })
 require('luasnip.loaders.from_vscode').lazy_load()
 
 require'nvim-treesitter.configs'.setup {
-    ensure_installed = { "c", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml" },
+    ensure_installed = { "c", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
     highlight = {
         enable = true,
         force_enable = true,
@@ -454,6 +522,11 @@ vim.keymap.set("n", "<leader>ss", function()
 end, { 
     noremap = true, desc = "Replace word (confirm)" 
 })
+
+-- Quick exit without save
+vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
+-- Quick save
+vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
 
 -- vim.keymap.set('n', 'K', function()
 --     if vim.bo.filetype == 'cpp' or vim.bo.filetype == 'c' then
