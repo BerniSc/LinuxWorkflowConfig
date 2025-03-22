@@ -333,7 +333,7 @@ cmp.setup({
 require('luasnip.loaders.from_vscode').lazy_load()
 
 require'nvim-treesitter.configs'.setup {
-    ensure_installed = { "c", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
+    ensure_installed = { "c", "lua", "vim", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
     highlight = {
         enable = true,
         force_enable = true,
