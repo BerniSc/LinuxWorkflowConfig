@@ -19,6 +19,13 @@ require('packer').startup(function()
     -- For TMux Integration (switch using <C-h> etc...)
     use 'christoomey/vim-tmux-navigator'     
 
+    -- Nicer Fold
+    use { 'anuvyklack/pretty-fold.nvim',
+        config = function()
+            require('pretty-fold').setup()
+        end
+    }
+
     -- Reaplace/Rename
     use {
         'gbprod/substitute.nvim',
@@ -548,3 +555,11 @@ vim.opt.expandtab = true            -- spaces instead of tabs
 vim.opt.smartindent = true          -- smart indenting
 vim.opt.clipboard = "unnamedplus"   -- use system clipboard
 vim.opt.signcolumn = "yes"          -- Allow addons etc to set "signs" -> Breakpoint in debugger etc
+
+-- Folds
+vim.opt.foldenable = true
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldenable = false                          -- Disable folding at startup
+vim.opt.foldlevel = 99                              -- High foldlevel to keep folds open by default
+
