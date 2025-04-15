@@ -241,7 +241,7 @@ require("mason-lspconfig").setup_handlers({
                 "--clang-tidy",
                 "--header-insertion=iwyu",
                 "--completion-style=detailed",
-                "--function-arg-placeholders"
+                "--function-arg-placeholders=false"     -- Do not put stuff in the brackets of autocompleted functions
             }
         })
     end,
