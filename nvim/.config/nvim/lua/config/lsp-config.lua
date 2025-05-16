@@ -13,17 +13,12 @@ require("mason").setup({
     }
 })
 
--- require("mason-lspconfig").setup({
+require("mason-lspconfig").setup({
     -- list of servers to automatically install if they're not already installed
-    -- ensure_installed = { "lua_ls", "svelte", "marksman", "clangd" }
--- })
-local servers = { "lua-language-server", "svelte-language-server", "marksman", "clangd" }
-
--- Manually ensure servers are installed
--- for _, server in ipairs(servers) do
---     local cmd = string.format(":MasonInstall %s", server)
---     vim.cmd(cmd)
--- end
+    ensure_installed = { "rust_analyzer", "lua_ls", "svelte", "marksman", "clangd" },
+    automatic_enable = false,
+    
+})
 
 local lspconfig = require('lspconfig')
 

@@ -14,10 +14,10 @@ require('packer').startup(function()
     use 'nvim-treesitter/nvim-treesitter'  		-- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
 
     use {
-        'mason-org/mason.nvim', 	-- LSP package manager
+        'mason-org/mason.nvim', 	            -- LSP package manager
         requires = {
             'mason-org/mason-lspconfig.nvim', 	-- Mason LSP config bridge
-            'neovim/nvim-lspconfig'	-- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
+            'neovim/nvim-lspconfig'	            -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
         }
     }
 
