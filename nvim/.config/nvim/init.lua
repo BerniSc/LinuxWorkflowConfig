@@ -12,15 +12,22 @@ require('packer').startup(function()
 
     -- LSP and Completion
     use 'nvim-treesitter/nvim-treesitter'  		-- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
-    use 'neovim/nvim-lspconfig'  			    -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
-    use 'williamboman/mason.nvim'               -- LSP package manager
-    use 'williamboman/mason-lspconfig.nvim'     -- Mason LSP config bridge
+
+    use {
+        'mason-org/mason.nvim', 	-- LSP package manager
+        requires = {
+            'mason-org/mason-lspconfig.nvim', 	-- Mason LSP config bridge
+            'neovim/nvim-lspconfig'	-- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
+        }
+    }
 
     -- For TMux Integration (switch using <C-h> etc...)
     use 'christoomey/vim-tmux-navigator'     
 
     -- Nicer Fold
-    use { 'anuvyklack/pretty-fold.nvim',
+    -- use { 'anuvyklack/pretty-fold.nvim',
+    -- Use this fork as other one is stale and has an issue
+    use { 'bbjornstad/pretty-fold.nvim',
         config = function()
             require('pretty-fold').setup()
         end
@@ -203,99 +210,7 @@ require('lualine').setup {
 
 
 -- LSP Setup
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
--- Common on_attach function
-local on_attach = function(client, bufnr)
-    -- LSP keymaps
-    local opts = { buffer = bufnr }
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    
-    -- Force TreeSitter to re-highlight after changes, otherwise the highlighting breaks on fixes like automimport
-    vim.api.nvim_create_autocmd("BufWritePost", {
-        buffer = bufnr,
-        callback = function()
-            vim.cmd("TSBufEnable highlight")
-        end,
-    })
-
-    -- Notify on attach
-    vim.notify("LSP started for " .. vim.api.nvim_buf_get_name(bufnr))
-end
-
--- Install the LSP's
-require("mason").setup()
-require("mason-lspconfig").setup({
-    ensure_installed = { 
-        "svelte", 
-        "marksman", 
-        "clangd",
-    },
-    automatic_installation = true,
-})
-
-require("mason-lspconfig").setup_handlers({
-    -- Default handler
-    function(server_name)
-        require("lspconfig")[server_name].setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-            root_dir = function(fname)
-                return require('lspconfig.util').root_pattern(
-                    -- Common root Pattern
-                    '.git',
-                    'package.json',
-                    'Makefile',
-                    'CMakeLists.txt'
-                )(fname) or vim.fn.getcwd()
-            end
-        })
-    end,
-    
-    -- Special configs for specific LSPs 
-    ["clangd"] = function()
-        require("lspconfig").clangd.setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-            root_dir = function(fname)
-                return require('lspconfig.util').root_pattern(
-                    'compile_commands.json',
-                    'compile_flags.txt',
-                    '.clangd',
-                    'CMakeLists.txt',
-                    'Makefile',
-                    '.git'
-                )(fname) or vim.fn.getcwd()
-            end,
-            cmd = { 
-                "clangd",
-                "--background-index",
-                "--clang-tidy",
-                "--header-insertion=iwyu",
-                "--completion-style=detailed",
-                "--function-arg-placeholders=false"     -- Do not put stuff in the brackets of autocompleted functions
-            }
-        })
-    end,
-
-    ["svelte"] = function()
-        require("lspconfig").svelte.setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-            filetypes = { "svelte", "css", "js", "ts" },
-            root_dir = require('lspconfig.util').root_pattern('package.json', 'svelte.config.js', '.git')
-        })
-    end,
-
-    ["pyright"] = function()
-        require("lspconfig").pyright.setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-        })
-    end
-})
+require('config/lsp-config')
 
 local cmp = require('cmp')
 cmp.setup({
