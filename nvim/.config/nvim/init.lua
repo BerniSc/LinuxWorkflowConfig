@@ -61,6 +61,7 @@ require('packer').startup(function()
         config = function()
             local ai_config = require("config.ai-config")
             require("codecompanion").setup(ai_config)
+        end,
         requires = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
