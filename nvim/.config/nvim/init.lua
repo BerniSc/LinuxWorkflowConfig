@@ -56,6 +56,39 @@ require('packer').startup(function()
         end
     }
 
+    use {
+        "olimorris/codecompanion.nvim",
+        config = function()
+            local ai_config = require("config.ai-config")
+            require("codecompanion").setup(ai_config)
+        requires = {
+            "nvim-lua/plenary.nvim",
+            "nvim-treesitter/nvim-treesitter",
+        },
+    }
+
+    -- For Copilot integration into codecompanion
+    use {
+        "zbirenbaum/copilot.lua",
+        cmd = "Copilot",
+        -- event = "InsertEnter",  -- Would lazyload on first enter
+        config = function()
+            require("copilot").setup({
+                -- Kill copilot autocomplete to pass its functions to copilot_cmp
+                suggestion = { enabled = false },
+                panel = { enabled = false },
+            })
+        end,
+    }
+
+    -- Add copilot-stuff as possible cpm suggestions
+    use {
+        "zbirenbaum/copilot-cmp",
+        after = { "copilot.lua" },
+        config = function ()
+            require("copilot_cmp").setup()
+        end
+    }
 
     -- Completion Engine and Sources
     use 'hrsh7th/nvim-cmp'                      -- Completion Plugin
@@ -294,6 +327,7 @@ cmp.setup({
     --     { name = 'buffer' },
     -- }),
     sources = cmp.config.sources({
+        { name = 'copilot', priority = 1100 },
         { name = 'nvim_lsp', priority = 1000 },
         { name = 'luasnip', priority = 750 },
         { name = 'buffer', priority = 500 },
@@ -329,6 +363,7 @@ cmp.setup({
     formatting = {
         format = function(entry, vim_item)
             vim_item.menu = ({
+                copilot = "[Copilot]",
                 nvim_lsp = "[LSP]",
                 luasnip = "[Snippet]",
                 buffer = "[Buffer]",
@@ -534,6 +569,23 @@ end, {
 vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
 -- Quick save
 vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
+
+-- AI
+vim.keymap.set({ "n", "v" }, "<leader><C-a>",
+    "<cmd>CodeCompanionActions<cr>", { 
+        noremap = true, silent = true, desc = "Open CodeCompanion Actions" 
+})
+vim.keymap.set({ "n", "v" }, "<leader>a",
+    "<cmd>CodeCompanionChat Toggle<cr>", {
+        noremap = true, silent = true, desc = "Toggle CodeCompanion Chat"
+})
+vim.keymap.set("v", "<leader>ga",
+    "<cmd>CodeCompanionChat Add<cr>", {
+        noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
+})
+
+-- Expand 'cc' into 'CodeCompanion' in the command line
+vim.cmd([[cab cc CodeCompanion]])
 
 -- vim.keymap.set('n', 'K', function()
 --     if vim.bo.filetype == 'cpp' or vim.bo.filetype == 'c' then
