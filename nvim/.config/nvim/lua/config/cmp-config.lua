@@ -76,3 +76,35 @@ cmp.setup({
 
 -- Load VSCode-style snippets
 require('luasnip.loaders.from_vscode').lazy_load()
+
+-- luasnip var and its "descendants" for config
+local luasnip = require('luasnip')
+local s = luasnip.snippet
+local t = luasnip.text_node
+local i = luasnip.insert_node
+local f = luasnip.function_node
+
+-- Custom Snippet Function
+-- Define a function to get the current filename for the header guard
+local function header_guard_filename()
+    -- Get the current file's name, remove its extension, and replace slashes with underscores
+    -- TODO  Think abouzt just doing this for actuall Header files. :r after :t would remove extension
+    local filename = vim.fn.expand('%:t')                           -- %:t gives the file name,
+    filename = filename:gsub("/", "_"):gsub("%.", "_"):upper()      -- Replace slashes and dots with underscores and make it uppercase
+    return filename                                                 -- Return the formatted filename for header guard (single-line string)
+    -- return filename .. "_HPP"        -- TODO In case decided to check file type concat here with ending
+end
+
+-- Custom snippets for C++
+luasnip.add_snippets("cpp", {
+    -- Header Guard Snippet (triggered by 'mhg')
+    s("mhg", {
+        t("#ifndef "),
+        f(header_guard_filename, {}),
+        t({"", "#define "}),                -- Newline is done by putting in Object and add empty string, otherwise failure
+        f(header_guard_filename, {}),       
+        i(0),                               -- Place insert currsor here
+        t({"", "", "#endif // !"}),        
+        f(header_guard_filename, {}),       
+    }),
+})
