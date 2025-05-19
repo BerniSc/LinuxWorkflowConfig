@@ -24,7 +24,7 @@ local lspconfig = require('lspconfig')
 
 -- Clangd setup
 -- see https://github.com/espressif/esp-idf/issues/6721#issuecomment-2231830343
--- Gist is: As soon as we export get_idf for our nvim shell instance we go into special esp compiler mode
+-- GIST: As soon as we export get_idf for our nvim shell instance we go into special esp compiler mode
 local esp_idf_path = os.getenv("IDF_PATH")
 if esp_idf_path then
   -- for esp-idf
@@ -62,6 +62,14 @@ lspconfig.svelte.setup({
 lspconfig.pyright.setup({
     capabilities = capabilities,
     on_attach = on_attach
+})
+
+-- TSServer setup (for JavaScript and TypeScript)
+lspconfig.ts_ls.setup({
+    capabilities = capabilities,
+    on_attach = on_attach,
+    filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    cmd = { "typescript-language-server", "--stdio" }
 })
 
 -- Completion setup in cmp-config.lua
