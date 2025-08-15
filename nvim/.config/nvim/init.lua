@@ -320,7 +320,7 @@ vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
 
 -- AI
-vim.keymap.set({ "n", "v" }, "<leader><C-a>",
+vim.keymap.set({ "n", "v" }, "<leader>cc",
     "<cmd>CodeCompanionActions<cr>", { 
         noremap = true, silent = true, desc = "Open CodeCompanion Actions" 
 })
