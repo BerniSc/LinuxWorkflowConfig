@@ -239,6 +239,8 @@ vim.api.nvim_create_autocmd("FileType", {
     end
 })
 
+
+
 -----------------------
 --  Remaps
 -----------------------
@@ -280,6 +282,11 @@ vim.keymap.set('n', '<leader>fh', function()
         hidden=true	    -- show hidden File as well
     })
 end)
+
+-- Telescope full options select 
+vim.keymap.set('n', '<leader>tm', function()
+    require('telescope.builtin').builtin()
+end, { desc = "Telescope built-in picker menu" })
 
 -- Open Manpage
 vim.keymap.set('n', 'K', function()
@@ -336,6 +343,10 @@ vim.keymap.set("v", "<leader>ga",
     "<cmd>CodeCompanionChat Add<cr>", {
         noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
 })
+
+-- Codelense
+vim.keymap.set("n", "<leader>cl", function() vim.lsp.codelens.run() end, { desc = "Run Codelens" })
+vim.keymap.set("n", "<leader>cL", function() vim.lsp.codelens.refresh() end, { desc = "Refresh Codelens" })
 
 -- Expand 'cc' into 'CodeCompanion' in the command line
 vim.cmd([[cab cc CodeCompanion]])
