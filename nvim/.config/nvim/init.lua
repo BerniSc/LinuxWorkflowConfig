@@ -232,6 +232,10 @@ vim.api.nvim_create_autocmd("FileType", {
     pattern = "NvimTree",
     callback = function()
         vim.keymap.set('n', '<leader>gm', makefile_template.create_makefile_template, {buffer=true, desc="Create Makefile"})
+        vim.keymap.set('n', '<leader>gc', function()
+            vim.fn.system('compiledb make')
+            print("compile_commands.json generated with compiledb make")
+        end, {buffer=true, desc="Run compiledb make"})
     end
 })
 
