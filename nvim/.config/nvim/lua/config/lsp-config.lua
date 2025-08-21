@@ -30,7 +30,8 @@ if esp_idf_path then
   -- for esp-idf
     lspconfig.clangd.setup({
         handlers = handlers,
-        capabilities = capabilities;
+        capabilities = capabilities,
+        on_attach = on_attach,
         cmd = { "/home/berni/.espressif/tools/esp-clang/16.0.1-fe4f10a809/esp-clang/bin/clangd", "--background-index", "--query-driver=**", },
         root_dir = function()
             -- leave empty to stop nvim from cd'ing into ~/ due to global .clangd file
