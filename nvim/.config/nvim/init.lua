@@ -46,6 +46,15 @@ require('packer').startup(function()
         end
     }
 
+    -- Marks
+    use {
+        'chentoast/marks.nvim',
+        config = function()
+            require('marks').setup()
+            require('config.marks-config')
+        end
+    }
+
     -- Code Actions
     use {
         'aznhe21/actions-preview.nvim',
@@ -73,7 +82,11 @@ require('packer').startup(function()
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
         },
+        dependencies = {
+            "ravitemer/codecompanion-history.nvim",
+        },
     }
+    use { "ravitemer/codecompanion-history.nvim" }
 
     -- For Copilot integration into codecompanion
     use {

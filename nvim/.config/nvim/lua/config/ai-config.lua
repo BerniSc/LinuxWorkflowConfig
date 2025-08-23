@@ -11,6 +11,16 @@ local function load_env_config(path)
 end
 
 local base_config = {
+    extensions = {
+        history = {
+            enabled = true,
+            opts = {
+                auto_save = false,
+                save_chat_keymap = "sC",
+                auto_generate_title = false,
+            }
+        }
+    },
     strategies = {
         chat = {
             keymaps = {
@@ -56,7 +66,32 @@ local env_config_path = "/opt/ai-configs/localaiconfig.lua"
 local env_config = load_env_config(env_config_path)
 
 ------------------------------------------------------------------------
--- Save/Restore for CodeCompanionchats
+-- Custom config for history plugin to always ASK for a new title
+-- on sc, keep sC to save under default title
+------------------------------------------------------------------------
+local function save_chat_with_title()
+    vim.ui.input({ prompt = "Enter chat title: " }, function(input)
+        if input and input ~= "" then
+            require("codecompanion-history").save_chat({ title = input })
+        else
+            vim.notify("Save cancelled (no title entered)", vim.log.levels.INFO)
+        end
+    end)
+end
+
+-- Remap `sc` in chat buffers to use custom save
+vim.api.nvim_create_autocmd("FileType", {
+    -- only inside CodeCompanion chat buffers
+    pattern = "codecompanion", 
+    callback = function(event)
+        vim.keymap.set("n", "sc", save_chat_with_title, { buffer = event.buf, desc = "Save chat with title" })
+    end,
+})
+
+------------------------------------------------------------------------
+-- Save/Restore for CodeCompanionchats - Will not restore in buffer 
+-- and will not continue chat, but good for sharing
+-- For continue we use the history plugin
 -- https://gist.github.com/itsfrank/942780f88472a14c9cbb3169012a3328
 ------------------------------------------------------------------------
 -- create a folder to store our chats
