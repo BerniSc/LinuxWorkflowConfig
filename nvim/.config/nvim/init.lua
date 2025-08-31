@@ -74,6 +74,9 @@ require('packer').startup(function()
 
     use {
         "olimorris/codecompanion.nvim",
+        dependencies = {
+            "ravitemer/codecompanion-history.nvim",
+        },
         config = function()
             local ai_config = require("config.ai-config")
             require("codecompanion").setup(ai_config)
@@ -81,9 +84,6 @@ require('packer').startup(function()
         requires = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
-        },
-        dependencies = {
-            "ravitemer/codecompanion-history.nvim",
         },
     }
     use { "ravitemer/codecompanion-history.nvim" }
