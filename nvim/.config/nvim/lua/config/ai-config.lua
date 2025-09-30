@@ -72,7 +72,34 @@ local env_config = load_env_config(env_config_path)
 local function save_chat_with_title()
     vim.ui.input({ prompt = "Enter chat title: " }, function(input)
         if input and input ~= "" then
-            require("codecompanion-history").save_chat({ title = input })
+            local codecompanion = require("codecompanion")
+            -- get the current Chat
+            local success, chat = pcall(function()
+                return codecompanion.buf_get_chat(0)
+            end)
+
+            if success and chat then
+                vim.schedule(function()
+                    -- Ensure chat.opts exists
+                    if not chat.opts then
+                        chat.opts = {}
+                    end
+
+                    -- Set title directly in chat.opts
+                    chat.opts.title = input
+
+                    -- Access history extension directly
+                    local ok, history_ext = pcall(require, "codecompanion._extensions.history")
+                    if ok and history_ext and history_ext.exports and history_ext.exports.save_chat then
+                        history_ext.exports.save_chat(chat)
+                        vim.notify("Chat saved with title: " .. input, vim.log.levels.INFO)
+                    else
+                        vim.notify("History extension not available", vim.log.levels.ERROR)
+                    end
+                end)
+            else
+                vim.notify("No active CodeCompanion chat found", vim.log.levels.ERROR)
+            end
         else
             vim.notify("Save cancelled (no title entered)", vim.log.levels.INFO)
         end
