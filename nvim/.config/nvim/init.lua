@@ -136,7 +136,7 @@ require('packer').startup(function()
         config = function()
             require('gitblame').setup {
                 enabled = false,
-                date_format = "%d-%m-%Y %H:%M",
+                date_format = "%d.%m.%y %H:%M",
             }
         end
     }
