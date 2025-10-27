@@ -106,7 +106,7 @@ require('packer').startup(function()
     use {
         "zbirenbaum/copilot-cmp",
         after = { "copilot.lua" },
-        config = function ()
+        config = function()
             require("copilot_cmp").setup()
         end
     }
@@ -131,6 +131,15 @@ require('packer').startup(function()
     use 'lewis6991/gitsigns.nvim'               -- git changes in gutter
     use 'sindrets/diffview.nvim'                -- git Diff Viewer
     use 'kdheepak/lazygit.nvim'                 -- git UI <space>gg
+    use {                                       -- togglable git Blame view, start via :GitBlameToggle
+        'f-person/git-blame.nvim',
+        config = function()
+            require('gitblame').setup {
+                enabled = false,
+                date_format = "%d-%m-%Y %H:%M",
+            }
+        end
+    }
 
     -- Theme
     use 'navarasu/onedark.nvim'
@@ -140,7 +149,7 @@ require('packer').startup(function()
         'folke/todo-comments.nvim',
         requires = 'nvim-lua/plenary.nvim',
         config = function()
-            require('todo-comments').setup{
+            require('todo-comments').setup {
                 highlight = {
                     pattern = [[.*<(KEYWORDS)\s*]],
                     multiline = true,
