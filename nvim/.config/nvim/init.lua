@@ -10,6 +10,9 @@ require('packer').startup(function()
     use 'nvim-telescope/telescope-ui-select.nvim' -- required by telescope for CodeActions
     use 'nvim-telescope/telescope.nvim'  		-- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
 
+    -- Message Management (Toasts)
+    use 'rcarriga/nvim-notify'
+
     -- LSP and Completion
     use 'nvim-treesitter/nvim-treesitter'  		-- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
 
@@ -72,6 +75,7 @@ require('packer').startup(function()
         end
     }
 
+    use { "ravitemer/codecompanion-history.nvim" }
     use {
         "olimorris/codecompanion.nvim",
         dependencies = {
@@ -86,7 +90,6 @@ require('packer').startup(function()
             "nvim-treesitter/nvim-treesitter",
         },
     }
-    use { "ravitemer/codecompanion-history.nvim" }
 
     -- For Copilot integration into codecompanion
     use {
@@ -166,6 +169,33 @@ require('packer').startup(function()
         'nvim-lualine/lualine.nvim',
         requires = { 'nvim-tree/nvim-web-devicons' }
     }
+
+    -- Vim Tips
+    vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+            vim.schedule(function()
+                local job = require('plenary.job')
+                job:new({
+                    command = 'curl',
+                    args = { '-L', 'https://vtip.43z.one' },
+                    on_exit = function(j, exit_code)
+                        vim.schedule(function()
+                            local res = table.concat(j:result())
+                            if exit_code ~= 0 then
+                                res = 'Error fetching tip: ' .. res
+                            end
+                            require("notify")(res, "info", {
+                                title = "Vim Tip!",
+                                render = "simple",
+                                stages = "static",
+                                timeout = 6000
+                            })
+                        end)
+                    end,
+                }):start()
+            end)
+        end,
+    })
 
     -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
     use {'stevearc/dressing.nvim'}
