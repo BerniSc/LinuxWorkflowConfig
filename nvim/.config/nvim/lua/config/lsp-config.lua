@@ -112,7 +112,7 @@ enable_lsp_server("lua_ls", {
             },
             -- Don't warn about 'vim' being undefined
             diagnostics = {
-                globals = { 'vim' },
+                globals = { 'vim', 'use' },
             },
             workspace = {
                 -- Load Neovim's Lua API definitions and dont ask about configuring other libs

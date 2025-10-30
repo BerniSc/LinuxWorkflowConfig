@@ -49,6 +49,17 @@ require('packer').startup(function()
         end
     }
 
+    -- Movement
+    use {
+        'aaronik/treewalker.nvim',
+          setup = function()
+              require('treewalker').setup({
+                  highlight_duration=400
+              })
+          end
+    }
+
+
     -- Marks
     use {
         'chentoast/marks.nvim',
@@ -255,7 +266,7 @@ require('telescope').setup{
         mappings = {
             i = {
                 -- absolute
-                ["<C-y>"] = function(prompt_bufn)
+                ["<C-y>"] = function(prompt_bufnr)
                     local selection = require('telescope.actions.state').get_selected_entry()
                     vim.fn.setreg('+', selection.value)
                     require('telescope.actions').close(prompt_bufnr)
@@ -355,26 +366,26 @@ vim.keymap.set('n', '<leader>s', ':Telescope lsp_document_symbols<CR>')
 vim.keymap.set("n", "S", vim.lsp.buf.rename, { noremap = true, desc = "Smart rename (LSP)" })
 
 -- Fast replace without confirm
-vim.keymap.set("n", "sw", require('substitute.range').word, { 
-    noremap = true, desc = "Replace word (all instances)" 
+vim.keymap.set("n", "sw", require('substitute.range').word, {
+    noremap = true, desc = "Replace word (all instances)"
 })
-vim.keymap.set("n", "s", require('substitute.range').operator, { 
-    noremap = true, desc = "Replace in motion" 
+vim.keymap.set("n", "s", require('substitute.range').operator, {
+    noremap = true, desc = "Replace in motion"
 })
-vim.keymap.set("x", "s", require('substitute.range').visual, { 
-    noremap = true, desc = "Replace in visual" 
+vim.keymap.set("x", "s", require('substitute.range').visual, {
+    noremap = true, desc = "Replace in visual"
 })
 
 -- With confirmation (using leader)
 vim.keymap.set("n", "<leader>s", function()
     require('substitute.range').operator({ confirm = true })
-end, { 
-    noremap = true, desc = "Replace in motion (confirm)" 
+end, {
+    noremap = true, desc = "Replace in motion (confirm)"
 })
 vim.keymap.set("n", "<leader>ss", function()
     require('substitute.range').word({ confirm = true })
-end, { 
-    noremap = true, desc = "Replace word (confirm)" 
+end, {
+    noremap = true, desc = "Replace word (confirm)"
 })
 
 -- Quick exit without save
@@ -384,8 +395,8 @@ vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
 
 -- AI
 vim.keymap.set({ "n", "v" }, "<leader>cc",
-    "<cmd>CodeCompanionActions<cr>", { 
-        noremap = true, silent = true, desc = "Open CodeCompanion Actions" 
+    "<cmd>CodeCompanionActions<cr>", {
+        noremap = true, silent = true, desc = "Open CodeCompanion Actions"
 })
 vim.keymap.set({ "n", "v" }, "<leader>a",
     "<cmd>CodeCompanionChat Toggle<cr>", {
@@ -395,6 +406,18 @@ vim.keymap.set("v", "<leader>ga",
     "<cmd>CodeCompanionChat Add<cr>", {
         noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
 })
+
+-- Movement - Treewalker
+-- Move
+vim.keymap.set({ 'n', 'v' }, '<M-k>', '<cmd>Treewalker Up<cr>', { silent = true })
+vim.keymap.set({ 'n', 'v' }, '<M-j>', '<cmd>Treewalker Down<cr>', { silent = true })
+vim.keymap.set({ 'n', 'v' }, '<M-h>', '<cmd>Treewalker Left<cr>', { silent = true })
+vim.keymap.set({ 'n', 'v' }, '<M-l>', '<cmd>Treewalker Right<cr>', { silent = true })
+-- Swap
+vim.keymap.set('n', '<M-K>', '<cmd>Treewalker SwapUp<cr>', { silent = true })
+vim.keymap.set('n', '<M-J>', '<cmd>Treewalker SwapDown<cr>', { silent = true })
+vim.keymap.set('n', '<M-H>', '<cmd>Treewalker SwapLeft<cr>', { silent = true })
+vim.keymap.set('n', '<M-L>', '<cmd>Treewalker SwapRight<cr>', { silent = true })
 
 -- Codelense
 vim.keymap.set("n", "<leader>cl", function() vim.lsp.codelens.run() end, { desc = "Run Codelens" })

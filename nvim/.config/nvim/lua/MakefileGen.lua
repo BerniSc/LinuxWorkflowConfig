@@ -6,17 +6,17 @@ M.create_makefile_template = function()
     -- Get selected node from NvimTree
     local node = require('nvim-tree.api').tree.get_node_under_cursor()
     if not node then return end
-    
+
     -- Get the directory path (if file is selected, use its parent)
     local path = node.type == 'directory' and node.absolute_path or vim.fn.fnamemodify(node.absolute_path, ':h')
-    
+
     -- Find all cpp files recursively
     local cpp_files = vim.fn.glob(path .. "/**/*.cpp", false, true)
     local sources = {}
     for i, file in ipairs(cpp_files) do
         sources[i] = file:gsub(path .. "/", "")
     end
-    
+
     local makefile = [[
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17
@@ -53,7 +53,7 @@ clean:
 
     -- Create include directory
     vim.fn.mkdir("include", "p")
-    
+
     -- Replace leading spaces with tabs
     makefile = makefile:gsub("\n    ", "\n\t")
 
