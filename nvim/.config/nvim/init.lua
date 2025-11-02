@@ -15,6 +15,12 @@ require('packer').startup(function()
 
     -- LSP and Completion
     use 'nvim-treesitter/nvim-treesitter'  		-- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
+    use {
+        'nvim-treesitter/nvim-treesitter-context', -- display current function/context on top of screen
+        config = function()
+            require'treesitter-context'.setup{}
+        end
+    }
 
     use {
         'mason-org/mason.nvim', 	            -- LSP package manager
@@ -25,7 +31,7 @@ require('packer').startup(function()
     }
 
     -- For TMux Integration (switch using <C-h> etc...)
-    use 'christoomey/vim-tmux-navigator'     
+    use 'christoomey/vim-tmux-navigator'
 
     -- Nicer Fold
     -- use { 'anuvyklack/pretty-fold.nvim',
@@ -52,13 +58,12 @@ require('packer').startup(function()
     -- Movement
     use {
         'aaronik/treewalker.nvim',
-          setup = function()
-              require('treewalker').setup({
-                  highlight_duration=400
-              })
-          end
+        config = function()
+            require('treewalker').setup({
+                highlight_duration=400
+            })
+        end
     }
-
 
     -- Marks
     use {
@@ -321,6 +326,8 @@ vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 -- Tree-Setup and Shortcut
 require('nvim-tree').setup()
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
+-- Toggle Tree-Context Display
+vim.keymap.set('n', '<leader>tc', ':TSContext<CR>', { desc = "Toggle Treesitter Context" })
 
 -- Git Integration
 vim.keymap.set('n', '<leader>gg', ':LazyGit<CR>', { silent = true })
@@ -392,6 +399,10 @@ end, {
 vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
 -- Quick save
 vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
+
+-- display spaces
+vim.keymap.set("v", "<leader>ds", ":set listchars+=space:␣ | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
+vim.keymap.set("n", "<leader>ds", ":set listchars+=space:␣ | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
 
 -- AI
 vim.keymap.set({ "n", "v" }, "<leader>cc",
