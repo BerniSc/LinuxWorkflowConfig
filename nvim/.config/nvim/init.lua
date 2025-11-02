@@ -1,4 +1,4 @@
--- Set leader key to space (We can call "Space" plus Regular Key for new Mapping meaning
+-- Set leader-key to space (We can call "Space" plus Regular Key for new Mapping meaning)
 vim.g.mapleader = " "
 
 require('packer').startup(function()
@@ -6,27 +6,27 @@ require('packer').startup(function()
     use 'wbthomason/packer.nvim'
 
     -- The Fuzzy Finder and its Dependency
-    use 'nvim-lua/plenary.nvim'                 -- required by telescope, gitsigns etc
+    use 'nvim-lua/plenary.nvim'                   -- required by telescope, gitsigns etc
     use 'nvim-telescope/telescope-ui-select.nvim' -- required by telescope for CodeActions
-    use 'nvim-telescope/telescope.nvim'  		-- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
+    use 'nvim-telescope/telescope.nvim'           -- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
 
     -- Message Management (Toasts)
     use 'rcarriga/nvim-notify'
 
     -- LSP and Completion
-    use 'nvim-treesitter/nvim-treesitter'  		-- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
+    use 'nvim-treesitter/nvim-treesitter'           -- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
     use {
-        'nvim-treesitter/nvim-treesitter-context', -- display current function/context on top of screen
+        'nvim-treesitter/nvim-treesitter-context',  -- display current function/context on top of screen
         config = function()
             require'treesitter-context'.setup{}
         end
     }
 
     use {
-        'mason-org/mason.nvim', 	            -- LSP package manager
+        'mason-org/mason.nvim',                 -- LSP package manager
         requires = {
-            'mason-org/mason-lspconfig.nvim', 	-- Mason LSP config bridge
-            'neovim/nvim-lspconfig'	            -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
+            'mason-org/mason-lspconfig.nvim',   -- Mason LSP config bridge
+            'neovim/nvim-lspconfig'             -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
         }
     }
 
@@ -314,10 +314,10 @@ vim.api.nvim_create_autocmd("FileType", {
 -----------------------
 
 -- LSP mappings that don't override defaults
-vim.keymap.set('i', '<C-Space>', vim.lsp.omnifunc)		        -- Our Autocomplete
-vim.keymap.set('n', '<leader>k', vim.lsp.buf.hover)      	    -- hover info (Use "Space" as K opens manpage)
-vim.keymap.set('n', '<leader>gd', vim.lsp.buf.definition) 	    -- go to definition
-vim.keymap.set('n', '<leader>gr', vim.lsp.buf.references) 	    -- find references
+vim.keymap.set('i', '<C-Space>', vim.lsp.omnifunc)              -- Our Autocomplete
+vim.keymap.set('n', '<leader>k', vim.lsp.buf.hover)             -- hover info (Use "Space" as K opens manpage)
+vim.keymap.set('n', '<leader>gd', vim.lsp.buf.definition)       -- go to definition
+vim.keymap.set('n', '<leader>gr', vim.lsp.buf.references)       -- find references
 
 vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
@@ -348,8 +348,8 @@ vim.keymap.set('i', '<C-c>', '<Esc>')
 -- Find from Home - f.e. Edit Config for NVIM
 vim.keymap.set('n', '<leader>fh', function()
     require('telescope.builtin').find_files({
-        cwd = "~/",  	-- search from home directory
-        hidden=true	    -- show hidden File as well
+        cwd = "~/",     -- search from home directory
+        hidden=true     -- show hidden File as well
     })
 end)
 
@@ -401,8 +401,8 @@ vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
 
 -- display spaces
-vim.keymap.set("v", "<leader>ds", ":set listchars+=space:␣ | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
-vim.keymap.set("n", "<leader>ds", ":set listchars+=space:␣ | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
+vim.keymap.set("v", "<leader>ds", ":set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
+vim.keymap.set("n", "<leader>ds", ":set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
 
 -- AI
 vim.keymap.set({ "n", "v" }, "<leader>cc",
