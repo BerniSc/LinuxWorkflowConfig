@@ -30,6 +30,17 @@ require('packer').startup(function()
         }
     }
 
+    use {
+        'BerniSc/calltrace.nvim',
+        config=function()
+            require("calltrace").setup({
+                display = {
+                    backend = "telescope",
+                },
+            })
+        end
+    }
+
     -- For TMux Integration (switch using <C-h> etc...)
     use 'christoomey/vim-tmux-navigator'
 
@@ -394,6 +405,10 @@ end, { desc = "Telescope built-in picker menu" })
 vim.keymap.set('n', 'K', function()
     vim.cmd('Man')
 end)
+
+-- calltrace
+vim.keymap.set('n', '<leader>sr', '<cmd>CalltraceSetReference<cr>')
+vim.keymap.set('n', '<leader>tf', '<cmd>CalltraceTrace<cr>')
 
 -- Better keymaps for LSP navigation
 vim.keymap.set('n', 'gd', '<cmd>Telescope lsp_definitions<cr>')
