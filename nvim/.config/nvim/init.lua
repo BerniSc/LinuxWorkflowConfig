@@ -119,6 +119,7 @@ require('packer').startup(function()
     }
 
     use { "ravitemer/codecompanion-history.nvim" }
+    use { "franco-ruggeri/codecompanion-spinner.nvim" }
     use {
         "olimorris/codecompanion.nvim",
         dependencies = {
@@ -188,7 +189,10 @@ require('packer').startup(function()
     }
 
     -- Theme
-    use 'navarasu/onedark.nvim'
+    use {
+        'navarasu/onedark.nvim',
+        tag = "v0.1.0",  -- TODO Update once fix is in
+    }
 
     -- Highlighting of ToDo notes etc
     use {

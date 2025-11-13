@@ -19,7 +19,8 @@ local base_config = {
                 save_chat_keymap = "sC",
                 auto_generate_title = false,
             }
-        }
+        },
+        spinner = {}
     },
     strategies = {
         chat = {
