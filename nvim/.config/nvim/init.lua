@@ -42,6 +42,33 @@ require('packer').startup(function()
         end
     }
 
+    -- Nice Markdown Display/Preview^^
+    use {
+        'MeanderingProgrammer/render-markdown.nvim',
+        after = { 'nvim-treesitter' },
+        requires = { 'nvim-tree/nvim-web-devicons', opt = true },
+        config = function()
+            require('render-markdown').setup({
+                file_types = { 'markdown', 'codecompanion' },
+                html = {
+                    enabled = true,
+                    tag = {
+                        buf         = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
+                        file        = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
+                        help        = { icon = '󰘥 ',  highlight = 'CodeCompanionChatVariable' },
+                        image       = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
+                        symbols     = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
+                        url         = { icon = '󰖟 ',  highlight = 'CodeCompanionChatVariable' },
+                        var         = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
+                        tool        = { icon = ' ',  highlight = 'CodeCompanionChatTool' },
+                        user_prompt = { icon = ' ',  highlight = 'CodeCompanionChatTool' },
+                        group       = { icon = ' ',  highlight = 'CodeCompanionChatToolGroup' },
+                    },
+                },
+            })
+        end,
+    }
+
     -- Reaplace/Rename
     use {
         'gbprod/substitute.nvim',
@@ -253,7 +280,8 @@ require('config/lsp-config')
 -- Completion Setup
 require('config/cmp-config')
 
-require'nvim-treesitter.configs'.setup {
+-- TODO Check
+require('nvim-treesitter.configs').setup {
     ensure_installed = { "c", "lua", "vim", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
     highlight = {
         enable = true,
@@ -261,7 +289,7 @@ require'nvim-treesitter.configs'.setup {
     },
 }
 
-require('telescope').setup{
+require('telescope').setup {
     extensions = {
         ['ui-select'] = {
             require('telescope.themes').get_dropdown()
@@ -364,10 +392,10 @@ vim.keymap.set('n', 'K', function()
 end)
 
 -- Better keymaps for LSP navigation
-vim.keymap.set('n', 'gd', ':Telescope lsp_definitions<CR>')
-vim.keymap.set('n', 'gr', ':Telescope lsp_references<CR>')
-vim.keymap.set('n', 'gi', ':Telescope lsp_implementations<CR>')
-vim.keymap.set('n', '<leader>s', ':Telescope lsp_document_symbols<CR>')
+vim.keymap.set('n', 'gd', '<cmd>Telescope lsp_definitions<cr>')
+vim.keymap.set('n', 'gr', '<cmd>Telescope lsp_references<cr>')
+vim.keymap.set('n', 'gi', '<cmd>Telescope lsp_implementations<cr>')
+vim.keymap.set('n', '<leader>s', '<cmd>Telescope lsp_document_symbols<cr>')
 
 -- LSP smart rename
 vim.keymap.set("n", "S", vim.lsp.buf.rename, { noremap = true, desc = "Smart rename (LSP)" })
@@ -396,13 +424,13 @@ end, {
 })
 
 -- Quick exit without save
-vim.keymap.set('n', '<leader>qq', ':q!<CR>', { noremap = true })
+vim.keymap.set('n', '<leader>qq', '<cmd>q!<CR>', { noremap = true })
 -- Quick save
-vim.api.nvim_set_keymap('n', '<C-s>', ':w<CR>', { noremap = true })
+vim.api.nvim_set_keymap('n', '<C-s>', '<cmd>w<CR>', { noremap = true })
 
 -- display spaces
-vim.keymap.set("v", "<leader>ds", ":set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
-vim.keymap.set("n", "<leader>ds", ":set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
+vim.keymap.set("v", "<leader>ds", "<cmd>set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
+vim.keymap.set("n", "<leader>ds", "<cmd>set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
 
 -- AI
 vim.keymap.set({ "n", "v" }, "<leader>cc",
@@ -416,6 +444,12 @@ vim.keymap.set({ "n", "v" }, "<leader>a",
 vim.keymap.set("v", "<leader>ga",
     "<cmd>CodeCompanionChat Add<cr>", {
         noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
+})
+
+
+-- Toggle Render-Markdown
+vim.keymap.set("n", "<leader>mt", "<cmd>RenderMarkdown toggle<cr>", {
+    noremap = true, desc = "Toggle RenderMarkdown display"
 })
 
 -- Movement - Treewalker
