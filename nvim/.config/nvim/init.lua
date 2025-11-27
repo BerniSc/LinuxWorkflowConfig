@@ -234,6 +234,27 @@ vim.keymap.set("v", "<leader>ga",
         noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
 })
 
+-- Tabs
+-- Quick tab navigation with Alt+t followed by number
+-- replicates <number>gt
+vim.keymap.set("n", "<M-t>", function()
+    -- Get the next character typed
+    local char = vim.fn.getchar()
+    local num = tonumber(vim.fn.nr2char(char))
+
+    if num and num >= 1 and num <= 9 then
+        -- Go to tab number
+        vim.cmd("tabnext " .. num)
+    else
+        -- If not a valid number, show message
+        print("Invalid tab number. Use 1-9.")
+    end
+end, { desc = "Go to tab by number (1-9)" })
+
+-- Additional tab bindings - Important regular one is <C-w>T to move window in Tab
+vim.keymap.set("n", "<M-t>n", "<cmd>tabnew<cr>", { desc = "New tab" })
+vim.keymap.set("n", "<M-t>c", "<cmd>tabclose<cr>", { desc = "Close tab" })
+vim.keymap.set("n", "<M-t>o", "<cmd>tabonly<cr>", { desc = "Close all other tabs" })
 
 -- Toggle Render-Markdown
 vim.keymap.set("n", "<leader>mt", "<cmd>RenderMarkdown toggle<cr>", {
