@@ -54,6 +54,7 @@ local plugins = {
 
     {
         'mason-org/mason.nvim',                 -- LSP package manager
+        event = "VeryLazy",
         dependencies = {
             'mason-org/mason-lspconfig.nvim',   -- Mason LSP config bridge
             'neovim/nvim-lspconfig'             -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
@@ -61,7 +62,7 @@ local plugins = {
     },
 
     -- For development
-    -- vim.opt.runtimepath:append("/home/berni/Projects/calltrace.nvim"),
+    -- { dir = "/home/berni/Projects/calltrace.nvim" },
 
     -- {
     --     'BerniSc/calltrace.nvim',
@@ -97,6 +98,7 @@ local plugins = {
     {
         'MeanderingProgrammer/render-markdown.nvim',
         dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
+        event = "VeryLazy",
         config = function()
             require('render-markdown').setup({
                 file_types = { 'markdown', 'codecompanion' },
@@ -172,6 +174,7 @@ local plugins = {
     { "franco-ruggeri/codecompanion-spinner.nvim" },
     {
         "olimorris/codecompanion.nvim",
+        event = "VeryLazy",
         dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-treesitter/nvim-treesitter",
@@ -207,16 +210,19 @@ local plugins = {
     },
 
     -- Completion Engine and Sources
-    'hrsh7th/nvim-cmp',                     -- Completion Plugin
-    'hrsh7th/cmp-nvim-lsp',                 -- LSP-Completion
-    'hrsh7th/cmp-buffer',                   -- Buffer-Completion
-    'hrsh7th/cmp-cmdline',                  -- Cmdline-Completions
-    'L3MON4D3/LuaSnip',                     -- snippet engine
-    'saadparwaiz1/cmp_luasnip',             -- snippet completions
-    'rafamadriz/friendly-snippets',         -- template-sample-snippets for the different languages
+    'hrsh7th/nvim-cmp',                             -- Completion Plugin
+    'hrsh7th/cmp-nvim-lsp',                         -- LSP-Completion
+    'hrsh7th/cmp-buffer',                           -- Buffer-Completion
+    'hrsh7th/cmp-cmdline',                          -- Cmdline-Completions
+    { 'L3MON4D3/LuaSnip', event = "VeryLazy" },     -- snippet engine
+    'saadparwaiz1/cmp_luasnip',                     -- snippet completions
+    'rafamadriz/friendly-snippets',                 -- template-sample-snippets for the different languages
 
     -- File-Tree and Icons
-    'nvim-tree/nvim-web-devicons',
+    {
+        'nvim-tree/nvim-web-devicons',
+        lazy = true
+    },
     {
         'nvim-tree/nvim-tree.lua',              -- File Explorer VSC Style
         dependencies = 'nvim-tree/nvim-web-devicons'
@@ -240,6 +246,7 @@ local plugins = {
     {
         'folke/todo-comments.nvim',
         dependencies = 'nvim-lua/plenary.nvim',
+        event = "VeryLazy",
         config = function()
             require('todo-comments').setup {
                 highlight = {
@@ -261,7 +268,7 @@ local plugins = {
 
 
     -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
-    { 'stevearc/dressing.nvim' }
+    { 'stevearc/dressing.nvim', event = "VeryLazy" }
 }
 
 return plugins
