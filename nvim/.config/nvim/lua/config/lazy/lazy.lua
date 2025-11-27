@@ -25,10 +25,9 @@ local plugins = {
         priority = 1000, -- Ensure loading first
         config = function()
             require('onedark').setup()
-            vim.cmd.colorscheme("onedark")
+            require('onedark').load()
         end,
     },
-
 
     -- The Fuzzy Finder and its Dependency
     'nvim-lua/plenary.nvim',                  -- required by telescope, gitsigns etc
