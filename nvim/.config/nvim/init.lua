@@ -230,7 +230,7 @@ vim.keymap.set({ "n", "v" }, "<leader>a",
         noremap = true, silent = true, desc = "Toggle CodeCompanion Chat"
 })
 vim.keymap.set("v", "<leader>ga",
-    "<cmd>CodeCompanionChat Add<cr>", {
+    ":'<,'>CodeCompanionChat Add<cr>", {
         noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
 })
 
