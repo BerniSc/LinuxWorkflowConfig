@@ -102,7 +102,21 @@ require('telescope').setup {
 require('telescope').load_extension('ui-select')
 
 require('nvim-web-devicons').setup()
-require('nvim-tree').setup()
+require('nvim-tree').setup({
+    on_attach = function(bufnr)
+        local api = require("nvim-tree.api")
+
+        local function opts(desc)
+            return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+        end
+
+        -- default mappings
+        api.config.mappings.default_on_attach(bufnr)
+
+        -- Custom mappings
+        vim.keymap.set('n', '<M-v>', api.node.open.vertical, opts("Open in vertical split"))
+    end,
+})
 
 ----------------------
 -- function for autogenerating a Makefile from the current dir in nvim-tree
@@ -135,8 +149,7 @@ vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
--- Tree-Setup and Shortcut
-require('nvim-tree').setup()
+-- Tree Shortcut
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
 -- Toggle Tree-Context Display
 vim.keymap.set('n', '<leader>tc', ':TSContext<CR>', { desc = "Toggle Treesitter Context" })
