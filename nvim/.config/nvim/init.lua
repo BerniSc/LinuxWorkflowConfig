@@ -66,14 +66,8 @@ require('config/lsp-config')
 -- Completion Setup
 require('config/cmp-config')
 
--- TODO Check
-require('nvim-treesitter.configs').setup {
-    ensure_installed = { "c", "lua", "vim", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
-    highlight = {
-        enable = true,
-        force_enable = true,
-    },
-}
+-- Treesitter-setup
+require('config/ts-config')
 
 require('telescope').setup {
     extensions = {

@@ -42,7 +42,8 @@ local plugins = {
         -- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
         'nvim-treesitter/nvim-treesitter',
         lazy = false,
-        build = ":TSUpdate"
+        branch = 'main',
+        build = ':TSUpdate'
     },
 
     {
