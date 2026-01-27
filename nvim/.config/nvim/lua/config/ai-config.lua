@@ -10,6 +10,8 @@ local function load_env_config(path)
     return {}
 end
 
+local prompt_module = require("data.codecompanion-prompts")
+
 local base_config = {
     extensions = {
         history = {
@@ -53,6 +55,9 @@ local base_config = {
                     description = "Previous Chat",
                 },
             },
+            opts = {
+                system_prompt = prompt_module.get_current_prompt,
+            },
             adapter = "copilot",
         },
         inline = {
@@ -61,6 +66,19 @@ local base_config = {
     },
 }
 
+--- Choose sysprompt from Lib (Add new ones in data)
+--- Defaults to cc-sysprompt
+vim.api.nvim_create_user_command("CodeCompanionPrompt", function(opts)
+    require("data.codecompanion-prompts").set_prompt_key(opts.args ~= "" and opts.args or nil)
+end, {
+    nargs = "?",
+    complete = function()
+        return require("data.codecompanion-prompts").prompt_keys()
+    end,
+    desc = "Set CodeCompanion systemprompt (empty for default)",
+})
+
+------------------------------------------------------------------------
 
 -- Load environment-specific configuration
 local env_config_path = "/opt/ai-configs/localaiconfig.lua"
