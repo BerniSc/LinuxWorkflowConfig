@@ -143,7 +143,7 @@ vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
--- Tree Shortcut
+-- Tree-Shortcut
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
 -- Toggle Tree-Context Display
 vim.keymap.set('n', '<leader>tc', ':TSContext<CR>', { desc = "Toggle Treesitter Context" })
