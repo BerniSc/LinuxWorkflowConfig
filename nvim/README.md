@@ -35,6 +35,13 @@ tar xf lazygit.tar.gz lazygit
 sudo install lazygit /usr/local/bin
 ```
 
+Treesitter-CLI for Treesitter Highlights
+```
+wget https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.3/tree-sitter-linux-x64.gz
+mv tree-sitter-linux-x64.gz "tree-sitter-linux-x64-$(date +%d.%m.%Y).gz"
+install ./tree-sitter-linux-x64-$(date +%d.%m.%Y).gz /usr/local/bin/tree-sitter
+```
+
 Nerdfont for cooler Display of all characters:
 ```
 JetBrainsMono NFP Regular
