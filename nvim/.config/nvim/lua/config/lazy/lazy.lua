@@ -1,4 +1,3 @@
-
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -20,12 +19,13 @@ local plugins = {
     -- Theme, should be available on start
     {
         'navarasu/onedark.nvim',
-        tag = "v0.1.0",  -- TODO Update once fix is in
         lazy = false,    -- Ensure loading at start
         priority = 1000, -- Ensure loading first
         config = function()
             require('onedark').setup()
             require('onedark').load()
+            -- Setup custom colours/themehighlights
+            vim.api.nvim_set_hl(0, '@markup.quote', { fg = '#FF7675', italic = true }) -- CodeCompanion "> Context" in lightred
         end,
     },
 
@@ -84,6 +84,53 @@ local plugins = {
 
     -- For TMux Integration (switch using <C-h> etc...)
     'christoomey/vim-tmux-navigator',
+
+    -- Easier Terminal-Switching
+    {
+        'akinsho/toggleterm.nvim',
+        version = "*",
+        opts = {
+            open_mapping = [[<M-c>]],
+            direction = current_direction,
+        },
+        config = function()
+            local directions = { "horizontal", "vertical", "float", "tab" }
+            local current_dir_idx = 1
+            local current_direction = directions[current_dir_idx]
+            local terminals = {}
+
+            local function open_terminal()
+                local Terminal = require("toggleterm.terminal").Terminal
+                if not terminals[current_direction] then
+                    terminals[current_direction] = Terminal:new({ direction = current_direction })
+                end
+                terminals[current_direction]:toggle()
+            end
+
+            local function set_term_direction()
+                vim.ui.select(directions, { prompt = "Select terminal direction:" }, function(choice)
+                    if choice then
+                        current_direction = choice
+                        vim.notify("Terminal direction set to: " .. choice)
+                        -- Close all terminals
+                        for _, term in pairs(terminals) do
+                            if term:is_open() then
+                                term:close()
+                            end
+                        end
+                        -- Open the terminal in new direction
+                        open_terminal()
+                    else
+                        vim.notify("No terminal direction selected", vim.log.levels.WARN)
+                    end
+                end)
+            end
+
+            vim.keymap.set('n', '<leader>td', set_term_direction, { desc = "Change Terminal-Direction" })
+            vim.keymap.set('n', '<M-c>', open_terminal, { desc = "Toggle Terminal" })
+            vim.keymap.set('t', '<leader><esc>', [[<C-\><C-n>]], { desc = "Detach Terminal" })
+        end,
+    },
 
     -- Nicer Fold
     -- { 'anuvyklack/pretty-fold.nvim',
