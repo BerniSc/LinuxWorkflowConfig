@@ -42,6 +42,15 @@ mv tree-sitter-linux-x64.gz "tree-sitter-linux-x64-$(date +%d.%m.%Y).gz"
 install ./tree-sitter-linux-x64-$(date +%d.%m.%Y).gz /usr/local/bin/tree-sitter
 ```
 
+If Clipboard makes Problems install win32yank on WSL2 and uninstall xclip
+```
+curl -sLo/tmp/win32yank.zip https://github.com/equalsraf/win32yank/releases/download/v0.1.1/win32yank-x64.zip
+unzip -p /tmp/win32yank.zip win32yank.exe > win32yank.exe
+sudo chmod +x win32yank.exe
+sudo mv /tmp/win32yank.exe /usr/local/bin/
+# Restart Computer, verify installation via :checkhealth
+```
+
 Nerdfont for cooler Display of all characters:
 ```
 JetBrainsMono NFP Regular
