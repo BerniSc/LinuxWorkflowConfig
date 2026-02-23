@@ -1,0 +1,119 @@
+VIM SUBSTITUTE PRACTICE
+=======================
+
+INSTRUCTIONS:
+-------------
+1. Read the task for each section.
+2. Visually select the indicated lines (use `V` or `v`).
+3. Perform the substitution as described.
+4. Check your result and undo (`u`) if needed.
+5. Move to the next exercise.
+6. (Optional) Better display with `:set filetype=help`
+
+---------------------------------
+REMINDER: Vim Substitution Basics
+---------------------------------
+- Substitute in selection: `:s/pattern/replacement/`
+- Global (all matches in line): `:s/pattern/replacement/g`
+- Capture groups: `\(pattern\)`, use `\1`, `\2`, etc. in replacement
+- "Very magic" mode: Start pattern with `\v` to avoid escaping parentheses and other regex characters
+  Example: `:s/\v(\w+) (\w+)/\2 \1/`
+- Undo: Press `u` in normal mode
+- `:noh` to clear old searches
+
+-------------------------
+EXERCISE 1: Basic Replace
+-------------------------
+Task: Replace "foo" with "bar" in the selected lines.
+
+foo
+foo
+baz
+
+-------------------------
+EXERCISE 2: Capture Group - Wrap Line
+-------------------------
+Task: Wrap each line in parentheses.
+
+apple
+banana
+cherry
+
+-------------------------
+EXERCISE 3: Swap Words
+-------------------------
+Task: Swap the two words in each line.
+
+first second
+hello world
+vim tutor
+
+-------------------------
+EXERCISE 4: Replace First Word
+-------------------------
+Task: Replace only the first word in each line with "replaced".
+
+one two three
+alpha beta gamma
+cat dog mouse
+
+-------------------------
+EXERCISE 5: Email Pattern
+-------------------------
+Task: Change emails to "Name at Domain dot TLD".
+
+alice@example.com
+bob@vim.org
+carol@neovim.io
+
+-------------------------
+EXERCISE 6: Date Format
+-------------------------
+Task: Change "YYYY-MM-DD" to "DD/MM/YYYY".
+
+2024-06-01
+1999-12-31
+2000-01-01
+
+-------------------------
+EXERCISE 7: Remove Digits
+-------------------------
+Task: Remove all digits from each line.
+
+abc123
+4vim5
+neovim2024
+
+-------------------------
+EXERCISE 8: Wrap Words in Quotes
+-------------------------
+Task: Wrap each word in quotes.
+
+foo bar baz
+vim neovim
+apple orange banana
+
+-------------------------
+EXERCISE 9: Reverse Each Line
+-------------------------
+Task: Reverse the characters in each line.
+
+abcde
+vimtutor
+12345
+
+-------------------------
+EXERCISE 10: Challenge - Multiple Substitutions
+-------------------------
+Task: Replace "foo" with "bar" and wrap the line in brackets.
+
+foo is great
+foo and baz
+baz foo
+
+-------------------------
+END OF PRACTICE
+-------------------------
+
+TIP: For each exercise, visually select the lines, press `:`, and enter your substitution command.
+

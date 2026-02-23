@@ -1,0 +1,39 @@
+EXERCISE 1: Basic Replace
+s/foo/bar/
+s/foo/bar/g
+
+EXERCISE 2: Capture Group - Wrap Line
+s/\(.*\)/(\1)/
+s/\v(.*)/(\1)/
+s/\v(.*)/(\1)
+
+EXERCISE 3: Swap Words
+s/\(\w\+\) \(\w\+\)/\2 \1/
+s/\v(\w+) (\w+)/\2 \1/
+
+EXERCISE 4: Replace First Word
+s/^\(\w\+\)/replaced/
+s/\v^\w+ /replaced /
+
+EXERCISE 5: Email Pattern
+s/\(\w\+\)@\(\w\+\)\.\(\w\+\)/\1 at \2 dot \3/
+s#\v(\w+)\@(\w+).(\w+)#\1 at \2 dot \3#
+
+EXERCISE 6: Date Format
+s/\(\d\{4\}\)-\(\d\{2\}\)-\(\d\{2\}\)/\3\/\2\/\1/
+s#\v(\d{4})-(\d{2})-(\d{2})#\3/\2/\1#
+
+EXERCISE 7: Remove Digits
+s/\d\+//g
+s/\d//g
+
+EXERCISE 8: Wrap Words in Quotes
+s/\(\w\+\)/"\1"/g
+s/\v(\w+)/"\1"/g
+
+EXERCISE 9: Reverse Each Line
+s/\(.*\)/\=join(reverse(split(submatch(1), '\zs')), '')
+
+EXERCISE 10: Challenge - Multiple Substitutions
+s/foo/bar/g | s/\(.*\)/[\1]/
+s/foo/bar/g | s/\v(.*)/[\1]/
