@@ -280,6 +280,18 @@ vim.keymap.set('n', '<M-J>', '<cmd>Treewalker SwapDown<cr>', { silent = true })
 vim.keymap.set('n', '<M-H>', '<cmd>Treewalker SwapLeft<cr>', { silent = true })
 vim.keymap.set('n', '<M-L>', '<cmd>Treewalker SwapRight<cr>', { silent = true })
 
+-- Treesitter Folding Options
+-- zf for regular folds (movements and visual mode)
+-- zF for treesitter-node-fold
+vim.keymap.set('n', 'zF', function()
+    local node = vim.treesitter.get_node()
+    if node then
+        local start_row = node:start()
+        local end_row = node:end_()
+        vim.cmd(start_row + 1 .. ',' .. end_row + 1 .. 'fold')
+    end
+end, { desc = 'Fold treesitter node' })
+
 -- Codelense
 vim.keymap.set("n", "<leader>cl", function() vim.lsp.codelens.run() end, { desc = "Run Codelens" })
 vim.keymap.set("n", "<leader>cL", function() vim.lsp.codelens.refresh() end, { desc = "Refresh Codelens" })
@@ -310,8 +322,4 @@ vim.opt.signcolumn = "yes"          -- Allow addons etc to set "signs" -> Breakp
 
 -- Folds
 vim.opt.foldenable = true
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-vim.opt.foldenable = false                          -- Disable folding at startup
 vim.opt.foldlevel = 99                              -- High foldlevel to keep folds open by default
-
