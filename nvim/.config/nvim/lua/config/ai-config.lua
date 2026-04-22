@@ -20,6 +20,9 @@ local base_config = {
                 auto_save = false,
                 save_chat_keymap = "sC",
                 auto_generate_title = false,
+                picker_keymaps = {
+                    duplicate = { n = "<M-y>", i = "<M-y>" },
+                }
             }
         },
         spinner = {}

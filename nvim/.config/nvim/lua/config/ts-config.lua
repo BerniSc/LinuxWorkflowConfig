@@ -8,9 +8,15 @@ vim.api.nvim_create_autocmd("FileType", {
         end
 
         -- Check if highlighting queries exist for this language
-        if vim.treesitter.query.get(lang, "highlights") then
+        if vim.treesitter.query.get(lang, 'highlights') then
             vim.treesitter.start(args.buf)
         end
+
+        vim.schedule(function()
+            if vim.treesitter.query.get(lang, 'indents') then
+                vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+            end
+        end)
     end,
 })
 
