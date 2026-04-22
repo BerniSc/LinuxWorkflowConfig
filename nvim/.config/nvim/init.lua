@@ -1,266 +1,37 @@
 -- Set leader-key to space (We can call "Space" plus Regular Key for new Mapping meaning)
 vim.g.mapleader = " "
 
-require('packer').startup(function()
-    -- PLUGIN manager
-    use 'wbthomason/packer.nvim'
+-- vim.opt.runtimepath:append("/home/berni/Projects/calltrace.nvim")
 
-    -- The Fuzzy Finder and its Dependency
-    use 'nvim-lua/plenary.nvim'                   -- required by telescope, gitsigns etc
-    use 'nvim-telescope/telescope-ui-select.nvim' -- required by telescope for CodeActions
-    use 'nvim-telescope/telescope.nvim'           -- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
+local plugins = require("config.lazy.lazy")
+require("lazy").setup(plugins)
 
-    -- Message Management (Toasts)
-    use 'rcarriga/nvim-notify'
-
-    -- LSP and Completion
-    use 'nvim-treesitter/nvim-treesitter'           -- better syntax highlighting (Syntax Highlighting, Better Code Understanding/Parsing etc)
-    use {
-        'nvim-treesitter/nvim-treesitter-context',  -- display current function/context on top of screen
-        config = function()
-            require'treesitter-context'.setup{}
-        end
-    }
-
-    use {
-        'mason-org/mason.nvim',                 -- LSP package manager
-        requires = {
-            'mason-org/mason-lspconfig.nvim',   -- Mason LSP config bridge
-            'neovim/nvim-lspconfig'             -- LSP support (Lang Server Protocoll; Code Completion, GoTo Definition, find References, Errorchecks)
-        }
-    }
-
-    use {
-        'BerniSc/calltrace.nvim',
-        config=function()
-            require("calltrace").setup({
-                display = {
-                    backend = "telescope",
-                },
-            })
-        end
-    }
-
-    -- For TMux Integration (switch using <C-h> etc...)
-    use 'christoomey/vim-tmux-navigator'
-
-    -- Nicer Fold
-    -- use { 'anuvyklack/pretty-fold.nvim',
-    -- Use this fork as other one is stale and has an issue
-    use { 'bbjornstad/pretty-fold.nvim',
-        config = function()
-            require('pretty-fold').setup()
-        end
-    }
-
-    -- Nice Markdown Display/Preview^^
-    use {
-        'MeanderingProgrammer/render-markdown.nvim',
-        after = { 'nvim-treesitter' },
-        requires = { 'nvim-tree/nvim-web-devicons', opt = true },
-        config = function()
-            require('render-markdown').setup({
-                file_types = { 'markdown', 'codecompanion' },
-                html = {
-                    enabled = true,
-                    tag = {
-                        buf         = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
-                        file        = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
-                        help        = { icon = '󰘥 ',  highlight = 'CodeCompanionChatVariable' },
-                        image       = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
-                        symbols     = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
-                        url         = { icon = '󰖟 ',  highlight = 'CodeCompanionChatVariable' },
-                        var         = { icon = ' ',  highlight = 'CodeCompanionChatVariable' },
-                        tool        = { icon = ' ',  highlight = 'CodeCompanionChatTool' },
-                        user_prompt = { icon = ' ',  highlight = 'CodeCompanionChatTool' },
-                        group       = { icon = ' ',  highlight = 'CodeCompanionChatToolGroup' },
-                    },
-                },
-            })
-        end,
-    }
-
-    -- Reaplace/Rename
-    use {
-        'gbprod/substitute.nvim',
-        config = function()
-            require("substitute").setup({
-                highlight_substituted_text = {
-                    enabled = true,
-                    timer = 5,
-                }
-            })
-        end
-    }
-
-    -- Movement
-    use {
-        'aaronik/treewalker.nvim',
-        config = function()
-            require('treewalker').setup({
-                highlight_duration=400
-            })
-        end
-    }
-
-    -- Marks
-    use {
-        'chentoast/marks.nvim',
-        config = function()
-            require('marks').setup()
-            require('config.marks-config')
-        end
-    }
-
-    -- Code Actions
-    use {
-        'aznhe21/actions-preview.nvim',
-        config = function()
-            require("actions-preview").setup({
-                backend = { "telescope" },
-                -- new diagnostic API
-                telescope = {
-                    sorting_strategy = "ascending",
-                    layout_strategy = "vertical",
-                    layout_config = { height = 0.5, width = 0.8 }
-                }
-            })
-            vim.keymap.set({ "n", "v" }, "<leader>ca", require("actions-preview").code_actions)
-        end
-    }
-
-    use { "ravitemer/codecompanion-history.nvim" }
-    use { "franco-ruggeri/codecompanion-spinner.nvim" }
-    use {
-        "olimorris/codecompanion.nvim",
-        dependencies = {
-            "ravitemer/codecompanion-history.nvim",
-        },
-        config = function()
-            local ai_config = require("config.ai-config")
-            require("codecompanion").setup(ai_config)
-        end,
-        requires = {
-            "nvim-lua/plenary.nvim",
-            "nvim-treesitter/nvim-treesitter",
-        },
-    }
-
-    -- For Copilot integration into codecompanion
-    use {
-        "zbirenbaum/copilot.lua",
-        cmd = "Copilot",
-        -- event = "InsertEnter",  -- Would lazyload on first enter
-        config = function()
-            require("copilot").setup({
-                -- Kill copilot autocomplete to pass its functions to copilot_cmp
-                suggestion = { enabled = false },
-                panel = { enabled = false },
-            })
-        end,
-    }
-
-    -- Add copilot-stuff as possible cpm suggestions
-    use {
-        "zbirenbaum/copilot-cmp",
-        after = { "copilot.lua" },
-        config = function()
-            require("copilot_cmp").setup()
-        end
-    }
-
-    -- Completion Engine and Sources
-    use 'hrsh7th/nvim-cmp'                      -- Completion Plugin
-    use 'hrsh7th/cmp-nvim-lsp'                  -- LSP-Completion
-    use 'hrsh7th/cmp-buffer'                    -- Buffer-Completion
-    use 'hrsh7th/cmp-cmdline'                   -- Cmdline-Completions
-    use 'L3MON4D3/LuaSnip'                      -- snippet engine
-    use 'saadparwaiz1/cmp_luasnip'              -- snippet completions
-    use 'rafamadriz/friendly-snippets'          -- template-sample-snippets for the different languages
-
-    -- File-Tree and Icons
-    use 'nvim-tree/nvim-web-devicons'
-    use {
-        'nvim-tree/nvim-tree.lua',              -- File Explorer VSC Style
-        requires = 'nvim-tree/nvim-web-devicons'
-    }
-
-    -- Git Integration
-    use 'lewis6991/gitsigns.nvim'               -- git changes in gutter
-    use 'sindrets/diffview.nvim'                -- git Diff Viewer
-    use 'kdheepak/lazygit.nvim'                 -- git UI <space>gg
-    use {                                       -- togglable git Blame view, start via :GitBlameToggle
-        'f-person/git-blame.nvim',
-        config = function()
-            require('gitblame').setup {
-                enabled = false,
-                date_format = "%d.%m.%y %H:%M",
-            }
-        end
-    }
-
-    -- Theme
-    use {
-        'navarasu/onedark.nvim',
-        tag = "v0.1.0",  -- TODO Update once fix is in
-    }
-
-    -- Highlighting of ToDo notes etc
-    use {
-        'folke/todo-comments.nvim',
-        requires = 'nvim-lua/plenary.nvim',
-        config = function()
-            require('todo-comments').setup {
-                highlight = {
-                    pattern = [[.*<(KEYWORDS)\s*]],
-                    multiline = true,
-                },
-                search = {
-                    pattern = [[\b(KEYWORDS)]],
-                }
-            }
-        end
-    }
-
-    -- Banner to display f.E. current Gitbranch
-    use {
-        'nvim-lualine/lualine.nvim',
-        requires = { 'nvim-tree/nvim-web-devicons' }
-    }
-
-    -- Vim Tips
-    vim.api.nvim_create_autocmd("VimEnter", {
-        callback = function()
-            vim.schedule(function()
-                local job = require('plenary.job')
-                job:new({
-                    command = 'curl',
-                    args = { '-L', 'https://vtip.43z.one' },
-                    on_exit = function(j, exit_code)
-                        vim.schedule(function()
-                            local res = table.concat(j:result())
-                            if exit_code ~= 0 then
-                                res = 'Error fetching tip: ' .. res
-                            end
-                            require("notify")(res, "info", {
-                                title = "Vim Tip!",
-                                render = "simple",
-                                stages = "static",
-                                timeout = 6000
-                            })
-                        end)
-                    end,
-                }):start()
-            end)
-        end,
-    })
-
-    -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
-    use {'stevearc/dressing.nvim'}
-end)
-
-require('onedark').setup()
-vim.cmd[[colorscheme onedark]]
+-- Vim Tips
+vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+        vim.schedule(function()
+            local job = require('plenary.job')
+            job:new({
+                command = 'curl',
+                args = { '-L', 'https://vtip.43z.one' },
+                on_exit = function(j, exit_code)
+                    vim.schedule(function()
+                        local res = table.concat(j:result())
+                        if exit_code ~= 0 then
+                            res = 'Error fetching tip: ' .. res
+                        end
+                        require("notify")(res, "info", {
+                            title = "Vim Tip!",
+                            render = "simple",
+                            stages = "static",
+                            timeout = 6000
+                        })
+                    end)
+                end,
+            }):start()
+        end)
+    end,
+})
 
 -- Wrap the Diagnosit Messages like Errormessages and warning so they Fit
 -- Configure diagnostic display
@@ -295,14 +66,8 @@ require('config/lsp-config')
 -- Completion Setup
 require('config/cmp-config')
 
--- TODO Check
-require('nvim-treesitter.configs').setup {
-    ensure_installed = { "c", "lua", "vim", "cpp", "svelte", "html", "css", "javascript", "markdown", "yaml", "python" },
-    highlight = {
-        enable = true,
-        force_enable = true,
-    },
-}
+-- Treesitter-setup
+require('config/ts-config')
 
 require('telescope').setup {
     extensions = {
@@ -331,7 +96,21 @@ require('telescope').setup {
 require('telescope').load_extension('ui-select')
 
 require('nvim-web-devicons').setup()
-require('nvim-tree').setup()
+require('nvim-tree').setup({
+    on_attach = function(bufnr)
+        local api = require("nvim-tree.api")
+
+        local function opts(desc)
+            return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+        end
+
+        -- default mappings
+        api.config.mappings.default_on_attach(bufnr)
+
+        -- Custom mappings
+        vim.keymap.set('n', '<M-v>', api.node.open.vertical, opts("Open in vertical split"))
+    end,
+})
 
 ----------------------
 -- function for autogenerating a Makefile from the current dir in nvim-tree
@@ -350,8 +129,6 @@ vim.api.nvim_create_autocmd("FileType", {
     end
 })
 
-
-
 -----------------------
 --  Remaps
 -----------------------
@@ -366,8 +143,7 @@ vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
--- Tree-Setup and Shortcut
-require('nvim-tree').setup()
+-- Tree-Shortcut
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
 -- Toggle Tree-Context Display
 vim.keymap.set('n', '<leader>tc', ':TSContext<CR>', { desc = "Toggle Treesitter Context" })
@@ -461,10 +237,31 @@ vim.keymap.set({ "n", "v" }, "<leader>a",
         noremap = true, silent = true, desc = "Toggle CodeCompanion Chat"
 })
 vim.keymap.set("v", "<leader>ga",
-    "<cmd>CodeCompanionChat Add<cr>", {
+    ":'<,'>CodeCompanionChat Add<cr>", {
         noremap = true, silent = true, desc = "Add visual selection to CodeCompanion Chat"
 })
 
+-- Tabs
+-- Quick tab navigation with Alt+t followed by number
+-- replicates <number>gt
+vim.keymap.set("n", "<M-t>", function()
+    -- Get the next character typed
+    local char = vim.fn.getchar()
+    local num = tonumber(vim.fn.nr2char(char))
+
+    if num and num >= 1 and num <= 9 then
+        -- Go to tab number
+        vim.cmd("tabnext " .. num)
+    else
+        -- If not a valid number, show message
+        print("Invalid tab number. Use 1-9.")
+    end
+end, { desc = "Go to tab by number (1-9)" })
+
+-- Additional tab bindings - Important regular one is <C-w>T to move window in Tab
+vim.keymap.set("n", "<M-t>n", "<cmd>tabnew<cr>", { desc = "New tab" })
+vim.keymap.set("n", "<M-t>c", "<cmd>tabclose<cr>", { desc = "Close tab" })
+vim.keymap.set("n", "<M-t>o", "<cmd>tabonly<cr>", { desc = "Close all other tabs" })
 
 -- Toggle Render-Markdown
 vim.keymap.set("n", "<leader>mt", "<cmd>RenderMarkdown toggle<cr>", {
@@ -482,6 +279,18 @@ vim.keymap.set('n', '<M-K>', '<cmd>Treewalker SwapUp<cr>', { silent = true })
 vim.keymap.set('n', '<M-J>', '<cmd>Treewalker SwapDown<cr>', { silent = true })
 vim.keymap.set('n', '<M-H>', '<cmd>Treewalker SwapLeft<cr>', { silent = true })
 vim.keymap.set('n', '<M-L>', '<cmd>Treewalker SwapRight<cr>', { silent = true })
+
+-- Treesitter Folding Options
+-- zf for regular folds (movements and visual mode)
+-- zF for treesitter-node-fold
+vim.keymap.set('n', 'zF', function()
+    local node = vim.treesitter.get_node()
+    if node then
+        local start_row = node:start()
+        local end_row = node:end_()
+        vim.cmd(start_row + 1 .. ',' .. end_row + 1 .. 'fold')
+    end
+end, { desc = 'Fold treesitter node' })
 
 -- Codelense
 vim.keymap.set("n", "<leader>cl", function() vim.lsp.codelens.run() end, { desc = "Run Codelens" })
@@ -513,8 +322,4 @@ vim.opt.signcolumn = "yes"          -- Allow addons etc to set "signs" -> Breakp
 
 -- Folds
 vim.opt.foldenable = true
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-vim.opt.foldenable = false                          -- Disable folding at startup
 vim.opt.foldlevel = 99                              -- High foldlevel to keep folds open by default
-
