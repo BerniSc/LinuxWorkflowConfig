@@ -232,8 +232,15 @@ vim.keymap.set('n', '<leader>qq', '<cmd>q!<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<C-s>', '<cmd>w<CR>', { noremap = true })
 
 -- display spaces
-vim.keymap.set("v", "<leader>ds", "<cmd>set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
-vim.keymap.set("n", "<leader>ds", "<cmd>set listchars+=space:␣,tab:→· | set list<CR>", { noremap = true, silent = true, desc = "Display Spaces" })
+local function toggle_whitespace()
+    if vim.o.list then
+        vim.cmd("set nolist")
+    else
+        vim.cmd("set listchars=space:␣,tab:→·")
+        vim.cmd("set list")
+    end
+end
+vim.keymap.set({"n", "v"}, "<leader>ds", toggle_whitespace, { noremap = true, silent = true, desc = "Toggle Display Spaces" })
 
 -- AI
 vim.keymap.set({ "n", "v" }, "<leader>cc",

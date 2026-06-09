@@ -18,6 +18,12 @@ mv nvim-linux-x86_64 /opt/
 ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
 ```
 
+> [!NOTE]
+> If unsure wheter a new version that is installed this way could break the existing installation, use
+> `sudo update-alternatives --install /usr/local/bin/nvim nvim /opt/<WHERE-WE-UNPACKED-IT-TO>/bin/nvim 100`
+> with the 100 beeing the prio-level (higher -> autoselect). Can then easily change it via
+> `sudo update-alternatives --config nvim`
+
 # Install Dependencies 
 The Plugin-Manager - Pulls all the required Plugins in on :PackerSync 
 ```
