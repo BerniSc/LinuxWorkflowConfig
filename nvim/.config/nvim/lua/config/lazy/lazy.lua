@@ -53,6 +53,20 @@ local plugins = {
         end
     },
 
+    -- Debugging
+    {
+        'mfussenegger/nvim-dap',                    -- DAP Protocol Connector
+        dependencies = {
+            'rcarriga/nvim-dap-ui',                 -- cool ui
+            'nvim-neotest/nvim-nio',                --
+            'jay-babu/mason-nvim-dap.nvim',         --
+            'theHamsta/nvim-dap-virtual-text',      --
+        },
+        config = function()
+            require('config.dap-config')
+        end,
+    },
+
     {
         'mason-org/mason.nvim',                 -- LSP package manager
         event = "VeryLazy",
@@ -91,7 +105,7 @@ local plugins = {
         version = "*",
         opts = {
             open_mapping = [[<M-c>]],
-            direction = current_direction,
+            direction = "horizontal",
         },
         config = function()
             local directions = { "horizontal", "vertical", "float", "tab" }
@@ -190,6 +204,18 @@ local plugins = {
                 highlight_duration=400
             })
         end
+    },
+
+    {
+        "hedyhli/outline.nvim",
+        lazy = true,
+        cmd = { "Outline", "OutlineOpen" },
+        keys = {
+            { "<leader>o", "<cmd>Outline<CR>", desc = "Toggle outline" },
+        },
+        opts = {
+
+        },
     },
 
     -- Marks

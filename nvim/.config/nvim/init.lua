@@ -69,6 +69,10 @@ require('config/cmp-config')
 -- Treesitter-setup
 require('config/ts-config')
 
+-- Debugging
+require('config/dap-config')
+
+
 -- telescope setup and local var for its internal configs
 local _actions = require("telescope.actions")
 require('telescope').setup {
@@ -200,6 +204,10 @@ vim.keymap.set('n', 'gr', '<cmd>Telescope lsp_references<cr>')
 vim.keymap.set('n', 'gi', '<cmd>Telescope lsp_implementations<cr>')
 vim.keymap.set('n', '<leader>s', '<cmd>Telescope lsp_document_symbols<cr>')
 
+-- Display all incoming and outgoing calls
+vim.keymap.set('n', '<leader>ci', '<cmd>Telescope lsp_incoming_calls<CR>', { desc = 'LSP Incoming Calls' })
+vim.keymap.set('n', '<leader>co', '<cmd>Telescope lsp_outgoing_calls<CR>', { desc = 'LSP Outgoing Calls' })
+
 -- LSP smart rename
 vim.keymap.set("n", "S", vim.lsp.buf.rename, { noremap = true, desc = "Smart rename (LSP)" })
 
@@ -310,6 +318,18 @@ end, { desc = 'Fold treesitter node' })
 -- Codelense
 vim.keymap.set("n", "<leader>cl", function() vim.lsp.codelens.run() end, { desc = "Run Codelens" })
 vim.keymap.set("n", "<leader>cL", function() vim.lsp.codelens.refresh() end, { desc = "Refresh Codelens" })
+
+-- Deugging Keymaps
+local dap = require('dap')
+local dapui = require('dapui')
+vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = 'Toggle Breakpoint' })
+vim.keymap.set('n', '<leader>dc', dap.continue, { desc = 'Continue/Start Debugging' })
+vim.keymap.set('n', '<leader>di', dap.step_into, { desc = 'Step Into' })
+vim.keymap.set('n', '<leader>do', dap.step_over, { desc = 'Step Over' })
+vim.keymap.set('n', '<leader>du', dap.step_out, { desc = 'Step Out' })
+vim.keymap.set('n', '<leader>dr', dap.repl.open, { desc = 'Open REPL' })
+vim.keymap.set('n', '<leader>dl', dap.run_last, { desc = 'Run Last' })
+vim.keymap.set('n', '<leader>dt', dapui.toggle, { desc = 'Toggle DAP UI' })
 
 -- Expand 'cc' into 'CodeCompanion' in the command line
 vim.cmd([[cab cc CodeCompanion]])
