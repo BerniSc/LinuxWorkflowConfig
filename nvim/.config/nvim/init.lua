@@ -147,6 +147,10 @@ vim.keymap.set('n', '<leader>ff', ':Telescope find_files<CR>')  -- find files
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<CR>')   -- find text (live grep)
 vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>')     -- find buffers
 
+vim.keymap.set('n', '<leader>FF', function()
+    require('telescope.builtin').find_files({ hidden = true })
+end, { desc = 'Find files (including hidden)' })
+
 -- Tree-Shortcut
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
 -- Toggle Tree-Context Display
@@ -316,7 +320,7 @@ vim.cmd([[cab cc CodeCompanion]])
 -----------------------
 -- vim settings
 vim.opt.number = true               -- line numbers
-vim.opt.relativenumber = true       -- relative line numbers
+vim.opt.relativenumber = false      -- relative line numbers
 vim.opt.tabstop = 4                 -- tab width
 vim.opt.shiftwidth = 4              -- indent width
 vim.opt.expandtab = true            -- spaces instead of tabs
