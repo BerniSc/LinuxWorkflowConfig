@@ -69,6 +69,8 @@ require('config/cmp-config')
 -- Treesitter-setup
 require('config/ts-config')
 
+-- telescope setup and local var for its internal configs
+local _actions = require("telescope.actions")
 require('telescope').setup {
     extensions = {
         ['ui-select'] = {
@@ -82,13 +84,15 @@ require('telescope').setup {
                 ["<C-y>"] = function(prompt_bufnr)
                     local selection = require('telescope.actions.state').get_selected_entry()
                     vim.fn.setreg('+', selection.value)
-                    require('telescope.actions').close(prompt_bufnr)
+                    _actions.close(prompt_bufnr)
                 end,
                 -- relative
                 ["<C-r>"] = function(prompt_bufnr)
                     local entry = require('telescope.actions.state').get_selected_entry()
                     vim.fn.setreg('+', entry.path:gsub(vim.loop.cwd() .. '/', ''))
                 end,
+                -- send selected to qf -> instead of <C-q> that sends all
+                ["<M-q>"] = _actions.send_selected_to_qflist + _actions.open_qflist,
             }
         }
     }
