@@ -157,6 +157,8 @@ end, { desc = 'Find files (including hidden)' })
 
 -- Tree-Shortcut
 vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')  -- <space>e to toggle
+vim.keymap.set('n', '<M-f>', ':NvimTreeFindFile<CR>')
+
 -- Toggle Tree-Context Display
 vim.keymap.set('n', '<leader>tc', ':TSContext<CR>', { desc = "Toggle Treesitter Context" })
 
