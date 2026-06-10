@@ -69,9 +69,7 @@ require('config/cmp-config')
 -- Treesitter-setup
 require('config/ts-config')
 
--- Debugging
-require('config/dap-config')
-
+-- Debugging is required in Lazy Setup TODO Think about moving all these there instead. Will have thi rethink benefits of this vs current
 
 -- telescope setup and local var for its internal configs
 local _actions = require("telescope.actions")
