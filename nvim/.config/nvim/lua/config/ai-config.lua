@@ -11,8 +11,17 @@ local function load_env_config(path)
 end
 
 local prompt_module = require("data.codecompanion-prompts")
+local skills = require("data.codecompanion-skills")
 
 local base_config = {
+    rules = vim.tbl_extend("keep", skills, {
+        opts = {
+            chat = {
+                enabled = true,
+                -- could autoload certain using "autoload = "name"", but for now load manually
+            }
+        }
+    }),
     extensions = {
         history = {
             enabled = true,
@@ -27,7 +36,7 @@ local base_config = {
         },
         spinner = {}
     },
-    strategies = {
+    interactions = {
         chat = {
             keymaps = {
                 close = {
@@ -65,6 +74,17 @@ local base_config = {
         },
         inline = {
             adapter = "copilot",
+        },
+        cli = {
+            agent = "opencode",
+            agents = {
+                opencode = {
+                    cmd = "opencode",
+                    args = {},
+                    description = "OpenCode CLI",
+                    provider = "terminal",
+                },
+            },
         },
     },
 }
@@ -198,6 +218,7 @@ vim.api.nvim_create_user_command("CodeCompanionSave", function(opts)
     save_path:write(table.concat(lines, "\n"), "w")
 end, { nargs = "*" })
 ------------------------------------------------------------------------
+
 
 -- Merge environment-specific config into base config
 local final_config = vim.tbl_deep_extend("force", base_config, env_config)
