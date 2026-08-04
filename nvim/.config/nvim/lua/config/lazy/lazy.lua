@@ -53,6 +53,21 @@ local plugins = {
         end
     },
 
+     -- Debugging
+    {
+        'mfussenegger/nvim-dap',                    -- DAP Protocol Connector
+        dependencies = {
+            'rcarriga/nvim-dap-ui',                 -- cool ui
+            'nvim-neotest/nvim-nio',                --
+            'jay-babu/mason-nvim-dap.nvim',         --
+            'theHamsta/nvim-dap-virtual-text',      --
+            'anuvyklack/hydra.nvim',                -- custom keybinds (UI-Menu style for debugkeys)
+        },
+        config = function()
+            require('config.dap-config')
+        end,
+    },
+
     {
         'mason-org/mason.nvim',                 -- LSP package manager
         event = "VeryLazy",
@@ -91,7 +106,7 @@ local plugins = {
         version = "*",
         opts = {
             open_mapping = [[<M-c>]],
-            direction = current_direction,
+            direction = "horizontal",
         },
         config = function()
             local directions = { "horizontal", "vertical", "float", "tab" }
@@ -118,7 +133,7 @@ local plugins = {
                                 term:close()
                             end
                         end
-                        -- Open the terminal in new direction
+                        -- Optionally open the terminal in new direction
                         open_terminal()
                     else
                         vim.notify("No terminal direction selected", vim.log.levels.WARN)

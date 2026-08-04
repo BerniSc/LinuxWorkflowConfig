@@ -102,9 +102,9 @@ luasnip.add_snippets("cpp", {
         t("#ifndef "),
         f(header_guard_filename, {}),
         t({"", "#define "}),                -- Newline is done by putting in Object and add empty string, otherwise failure
-        f(header_guard_filename, {}),       
+        f(header_guard_filename, {}),
         i(0),                               -- Place insert currsor here
-        t({"", "", "#endif // !"}),        
-        f(header_guard_filename, {}),       
+        t({"", "", "#endif // !"}),
+        f(header_guard_filename, {}),
     }),
 })
