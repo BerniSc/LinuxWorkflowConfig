@@ -77,6 +77,22 @@ local plugins = {
         }
     },
 
+    {
+        'BerniSc/burrow.nvim',
+        config = function()
+            require('burrow').setup()
+            require('burrow').register('<M-b>', {
+                name = 'Test Menu',
+                a = { '<cmd>echo "hello from a"<cr>', 'Say hello' },
+                b = { '<cmd>echo "hello from b"<cr>', 'Say hello B' },
+                s = {
+                    name = 'Submenu',
+                    x = { '<cmd>echo "deep!"<cr>', 'Deep entry' },
+                },
+            })
+        end,
+    },
+
     -- For development
     -- { dir = "/home/berni/Projects/calltrace.nvim" },
 
