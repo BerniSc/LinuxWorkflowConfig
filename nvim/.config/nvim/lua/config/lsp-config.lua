@@ -27,7 +27,6 @@ require("mason-lspconfig").setup({
     -- list of servers to automatically install if they're not already installed
     ensure_installed = { "rust_analyzer", "lua_ls", "svelte", "marksman", "clangd" },
     automatic_enable = false,
-    
 })
 
 -- Helper function to enable LSP servers directly after opening file

@@ -1,3 +1,9 @@
+-- config/lazy/lazy.lua
+-- Holds basic confs for the plugins. The string in there is the name of the plugin
+-- if dev.lua has that same plugin defined, maybe with explicit "name = "My/Plugin""
+-- the one from dev overwrites this one, meaning we can use that during development
+-- to take local directories for plugins and need not always push
+--
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -32,7 +38,39 @@ local plugins = {
     -- The Fuzzy Finder and its Dependency
     'nvim-lua/plenary.nvim',                  -- required by telescope, gitsigns etc
     'nvim-telescope/telescope-ui-select.nvim',-- required by telescope for CodeActions
-    'nvim-telescope/telescope.nvim',          -- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
+    {                                         -- fuzzy finder (Files) (Search like find and Grep) Usage :Telescope find_files
+        'nvim-telescope/telescope.nvim',
+        config = function()
+            local actions = require("telescope.actions")
+            require('telescope').setup {
+                extensions = {
+                    ['ui-select'] = {
+                        require('telescope.themes').get_dropdown()
+                    }
+                },
+                defaults = {
+                    mappings = {
+                        i = {
+                            -- Copy absolute path to clipboard
+                            ["<C-y>"] = function(prompt_bufnr)
+                                local selection = require('telescope.actions.state').get_selected_entry()
+                                vim.fn.setreg('+', selection.value)
+                                actions.close(prompt_bufnr)
+                            end,
+                            -- Copy relative path to clipboard
+                            ["<C-r>"] = function(prompt_bufnr)
+                                local entry = require('telescope.actions.state').get_selected_entry()
+                                vim.fn.setreg('+', entry.path:gsub(vim.loop.cwd() .. '/', ''))
+                            end,
+                            -- Send selected to quickfix (instead of <C-q> which sends all)
+                            ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+                        }
+                    }
+                }
+            }
+            require('telescope').load_extension('ui-select')
+        end,
+    },
 
     -- Message Management (Toasts)
     'rcarriga/nvim-notify',
@@ -59,7 +97,14 @@ local plugins = {
         dependencies = {
             'rcarriga/nvim-dap-ui',                 -- cool ui
             'nvim-neotest/nvim-nio',                --
-            'jay-babu/mason-nvim-dap.nvim',         --
+            {
+                'jay-babu/mason-nvim-dap.nvim',         -- auto-install debug adapters via Mason
+                config = function()
+                    require('mason-nvim-dap').setup({
+                        automatic_installation = true,
+                    })
+                end,
+            },
             'theHamsta/nvim-dap-virtual-text',      --
             'anuvyklack/hydra.nvim',                -- custom keybinds (UI-Menu style for debugkeys)
         },
@@ -80,38 +125,34 @@ local plugins = {
     {
         'BerniSc/burrow.nvim',
         config = function()
+            -- Menu registrations are in lua/config/keymaps.lua
             require('burrow').setup()
-            require('burrow').register('<M-b>', {
-                name = 'Test Menu',
-                a = { '<cmd>echo "hello from a"<cr>', 'Say hello' },
-                b = { '<cmd>echo "hello from b"<cr>', 'Say hello B' },
-                s = {
-                    name = 'Submenu',
-                    x = { '<cmd>echo "deep!"<cr>', 'Deep entry' },
-                },
-            })
         end,
     },
 
-    -- For development
-    -- { dir = "/home/berni/Projects/calltrace.nvim" },
 
-    -- {
-    --     'BerniSc/calltrace.nvim',
-    --     config=function()
-            -- require("calltrace").setup({
-            --     display = {
-            --         backend = "telescope",
-            --     },
-            --     loop_detection = {
-                    -- "per_branch" | "global"
-                    --      global: faster, better if memory is a constraint, prevents revisiting same function->function transition globally
-                    --      per_branch: slower, memory-intensive for deep calls, allows same function in different paths, only prevents loops within single branch
-            --         mode = "complete",
-            --     },
-            -- }),
-    --     end
-    -- },
+    {
+        'BerniSc/calltrace.nvim',
+        config = function()
+            require("calltrace").setup({
+                display = {
+                    backend = "telescope",
+                },
+                loop_detection = {
+                    mode = "complete",
+                },
+            })
+        end
+    },
+    {
+        "BerniSc/outline.nvim",
+        lazy = true,
+        cmd = { "Outline", "OutlineOpen" },
+        opts = {
+            picker = 'telescope'
+        },
+    },
+
 
     -- For TMux Integration (switch using <C-h> etc...)
     'christoomey/vim-tmux-navigator',
@@ -126,8 +167,7 @@ local plugins = {
         },
         config = function()
             local directions = { "horizontal", "vertical", "float", "tab" }
-            local current_dir_idx = 1
-            local current_direction = directions[current_dir_idx]
+            local current_direction = directions[1]
             local terminals = {}
 
             local function open_terminal()
@@ -169,7 +209,7 @@ local plugins = {
     {
         'bbjornstad/pretty-fold.nvim',
         config = function()
-            require('pretty-fold').setup()
+            require('pretty-fold').setup({})
         end
     },
 
@@ -227,8 +267,15 @@ local plugins = {
     {
         'chentoast/marks.nvim',
         config = function()
-            require('marks').setup()
-            require('config.marks-config')
+            require('marks').setup {
+                bookmark_0 = {
+                    sign = "⚑",
+                    virt_text = "hello world",
+                    -- explicitly prompt for a virtual line annotation when setting a bookmark from this group.
+                    -- defaults to false.
+                    annotate = false,
+                },
+            }
         end
     },
 
@@ -302,9 +349,24 @@ local plugins = {
         'nvim-tree/nvim-web-devicons',
         lazy = true
     },
-    {
-        'nvim-tree/nvim-tree.lua',              -- File Explorer VSC Style
-        dependencies = 'nvim-tree/nvim-web-devicons'
+    {   -- File Explorer VSC Style
+        'nvim-tree/nvim-tree.lua',
+        dependencies = 'nvim-tree/nvim-web-devicons',
+        config = function()
+            require('nvim-web-devicons').setup()
+            require('nvim-tree').setup({
+                on_attach = function(bufnr)
+                    local api = require("nvim-tree.api")
+                    local function opts(desc)
+                        return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+                    end
+                    -- default mappings
+                    api.config.mappings.default_on_attach(bufnr)
+                    -- Custom mappings
+                    vim.keymap.set('n', '<M-v>', api.node.open.vertical, opts("Open in vertical split"))
+                end,
+            })
+        end,
     },
 
     -- Git Integration
@@ -342,12 +404,49 @@ local plugins = {
     -- Banner to display f.E. current Gitbranch
     {
         'nvim-lualine/lualine.nvim',
-        dependencies = { 'nvim-tree/nvim-web-devicons' }
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            require('lualine').setup {
+                options = {
+                    theme = 'auto',
+                    component_separators = '|',
+                    section_separators = { left = '', right = '' },
+                    -- Disable for NvimTree and other file types that dont require it
+                    disabled_filetypes = {
+                        'NvimTree',
+                        'packer',
+                        'help'
+                    },
+                    -- We could set this if we just want one Status, for now leave it of and see how much it bothers
+                    globalstatus = false,
+                    -- Only display if it fits...
+                    cond = function()
+                        return vim.o.columns > 50
+                    end
+                },
+                sections = {
+                    lualine_a = {'mode'},
+                    lualine_b = {
+                        {'branch'},
+                        {'diff'},
+                    },
+                    lualine_c = {{'filename', path = 1}},
+                    lualine_x = {'encoding', 'fileformat', 'filetype'},
+                    lualine_y = {'progress'},
+                    lualine_z = {'location'}
+                }
+            }
+        end
     },
-
 
     -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
     { 'stevearc/dressing.nvim', event = "VeryLazy" }
 }
+
+-- Merge local dev-overrides (for example plugins loaded from dirs)
+local ok, dev_plugins = pcall(require, "config.lazy.dev")
+if ok and type(dev_plugins) == "table" then
+    vim.list_extend(plugins, dev_plugins)
+end
 
 return plugins
