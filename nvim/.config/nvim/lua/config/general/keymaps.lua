@@ -258,3 +258,10 @@ burrow.register('<leader>GG', {
         s = { '<cmd>DiffviewOpen --staged<cr>',          'Diff staged changes' },
     },
 })
+
+-- Snacks menu
+burrow.register('<leader>.', {
+    name = 'Scratch',
+    t = { '<cmd>lua require("snacks").scratch()<cr>',          'Toggle scratch buffer' },
+    s = { '<cmd>lua require("snacks").scratch.select()<cr>',   'Select scratch buffer' },
+})

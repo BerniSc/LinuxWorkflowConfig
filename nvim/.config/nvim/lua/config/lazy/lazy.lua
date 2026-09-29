@@ -279,6 +279,24 @@ local plugins = {
         end
     },
 
+    -- Quickfix Improvements
+    {
+        'kevinhwang91/nvim-bqf',
+        ft = 'qf',
+        config = function()
+            require('bqf').setup({
+                -- Do not automatically preview
+                preview = { auto_preview = false },
+                func_map = {
+                    ptoggleauto = '<leader>p',
+                    ptoggleitem = 'p',
+                    ptogglemode = 'zp', -- Fullscreen
+                },
+            })
+        end,
+    },
+
+
     -- Code Actions
     {
         'aznhe21/actions-preview.nvim',
@@ -440,7 +458,18 @@ local plugins = {
     },
 
     -- UI Improvements - like interaktive Filter in Mason-Config and f.e. rename-menu for vars etc.
-    { 'stevearc/dressing.nvim', event = "VeryLazy" }
+    {
+        "folke/snacks.nvim",
+        priority = 1000,
+        lazy = false,
+        opts = {
+            input = { enabled = true },   -- replaces vim.ui.input
+            select = { enabled = true },  -- replaces vim.ui.select
+            scratch = { enabled = true }, -- scratchpad with lazy loaded buffer
+            indent = { enabled = true },
+        },
+    },
+
 }
 
 -- Merge local dev-overrides (for example plugins loaded from dirs)
