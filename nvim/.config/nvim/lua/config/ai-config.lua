@@ -71,6 +71,13 @@ local base_config = {
             opts = {
                 system_prompt = prompt_module.get_current_prompt,
             },
+            tools = {
+                ["web_search"] = {
+                    opts = {
+                        adapter = "duckduckgo",
+                    },
+                },
+            },
             adapter = "copilot",
         },
         inline = {
