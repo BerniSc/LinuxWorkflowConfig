@@ -316,6 +316,7 @@ local plugins = {
 
     { "ravitemer/codecompanion-history.nvim" },
     { "franco-ruggeri/codecompanion-spinner.nvim" },
+    { "BerniSc/codecompanion-toolresults.nvim" },
     {
         "olimorris/codecompanion.nvim",
         event = "VeryLazy",

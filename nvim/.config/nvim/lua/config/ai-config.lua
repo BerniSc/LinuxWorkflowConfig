@@ -34,7 +34,8 @@ local base_config = {
                 }
             }
         },
-        spinner = {}
+        spinner = {},
+        toolresults = {},
     },
     interactions = {
         chat = {
