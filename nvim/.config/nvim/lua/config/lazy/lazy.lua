@@ -240,6 +240,30 @@ local plugins = {
         end,
     },
 
+    {
+        -- When using WSL and Powershell interop, might need to create symlink for powershell.exe in PATH.
+        -- Checkhealt's order is broken, there is no need to install waylands clipboard on WSL.
+        "HakonHarnes/img-clip.nvim",
+        event = "VeryLazy",
+        config = function()
+            require("img-clip").setup({
+                download_images = false,
+                filetypes = {
+                    codecompanion = {
+                        dir_path = "/tmp/codecompanion-images",
+                        prompt_for_file_name = false,
+                        use_absolute_path = true,
+                        file_name = "screenshot-%Y-%m-%d-%H-%M-%S",
+                        template = "![$FILE_NAME_NO_EXT]($FILE_PATH)",
+                    },
+                }
+            })
+        end,
+        keys = {
+            { "<leader>p", "<cmd>PasteImage<cr>", desc = "Paste image from system clipboard" },
+        },
+    },
+
     -- Reaplace/Rename
     {
         'gbprod/substitute.nvim',

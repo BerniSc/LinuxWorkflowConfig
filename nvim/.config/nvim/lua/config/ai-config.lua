@@ -22,6 +22,13 @@ local base_config = {
             }
         }
     }),
+    mcp = {
+        servers = {
+            playwright = {
+                cmd = { "npx", "-y", "@playwright/mcp@latest" },
+            },
+        },
+    },
     extensions = {
         history = {
             enabled = true,
@@ -34,8 +41,15 @@ local base_config = {
                 }
             }
         },
+        toolresults = {
+            enabled = true,
+            opts = {
+                cursor = {
+                    mode = "nearest",
+                },
+            }
+        },
         spinner = {},
-        toolresults = {},
     },
     interactions = {
         chat = {
